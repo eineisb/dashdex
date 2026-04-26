@@ -272,7 +272,7 @@
     }
 
     async function doBridge() {
-      setStatus("🌉 Bridge requires signing into Circle Console.\nVisit: https://developers.circle.com/app-kit", "loading");
+      setStatus("🌉 Bridge requires signing into Circle Console.\nVisit: https://dashdex-backend-production.up.railway.app/bridge", "loading");
     }
 
     async function doSwap() {
@@ -335,3 +335,47 @@
   </script>
 </body>
 </html>
+<script>
+// Override bridge and swap with real backend
+async function doBridge() {
+  try {
+    const fromChain = document.getElementById("bridgeFrom").value;
+    const toChain = document.getElementById("bridgeTo").value;
+    const amount = document.getElementById("bridgeAmount").value;
+    if (!amount) { setStatus("Enter an amount!", "error"); return; }
+    setStatus("🌉 Bridging " + amount + " USDC...", "loading");
+    const res = await fetch("https://dashdex-backend-production.up.railway.app/bridge", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ fromChain, toChain, amount })
+    });
+    const data = await res.json();
+    if (data.success) {
+      setStatus("✅ Bridge successful! State: " + data.state, "success");
+    } else {
+      setStatus("❌ " + data.error, "error");
+    }
+  } catch(e) { setStatus("❌ " + e.message, "error"); }
+}
+
+async function doSwap() {
+  try {
+    const tokenIn = document.getElementById("tokenIn").value;
+    const tokenOut = document.getElementById("tokenOut").value;
+    const amountIn = document.getElementById("swapAmount").value;
+    if (!amountIn) { setStatus("Enter an amount!", "error"); return; }
+    setStatus("🔄 Swapping " + amountIn + " " + tokenIn + "...", "loading");
+    const res = await fetch("https://dashdex-backend-production.up.railway.app/swap", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tokenIn, tokenOut, amountIn })
+    });
+    const data = await res.json();
+    if (data.success) {
+      setStatus("✅ Swap successful!\nReceived: " + data.amountOut + " " + tokenOut, "success");
+    } else {
+      setStatus("❌ " + data.error, "error");
+    }
+  } catch(e) { setStatus("❌ " + e.message, "error"); }
+}
+</script>
