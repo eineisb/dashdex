@@ -113,7 +113,7 @@
       <div class="stat-box"><div class="stat-value">0%</div><div class="stat-label">Slippage</div></div>
     </div>
     <label>From Chain</label>
-    <select id="bridgeFrom">
+    <select id="bridgeFrom" onchange="updateBridgeAvailable()">
       <option value="Ethereum_Sepolia">Ethereum Sepolia</option>
       <option value="Arc_Testnet">Arc Testnet</option>
     </select>
@@ -268,7 +268,7 @@
         document.getElementById("totalBal").innerText = "$" + total;
         document.getElementById("balanceRow").style.display = "flex";
         document.getElementById("sendAvailable").innerText = usdcBalance.toFixed(2);
-        document.getElementById("bridgeAvailable").innerText = usdcBalance.toFixed(2);
+        // Bridge available updated by updateBridgeAvailable()
         document.getElementById("tipAvailable").innerText = usdcBalance.toFixed(2);
         updateSwapAvailable();
       } catch(e) { setStatus("❌ Balance error: " + e.message, "error"); }
@@ -298,6 +298,14 @@
       document.getElementById("tab-" + tab).classList.add("active");
       el.classList.add("active");
       updateSwapAvailable();
+    }
+
+    function updateBridgeAvailable() {
+      const fromChain = document.getElementById("bridgeFrom").value;
+      const bal = fromChain === "Ethereum_Sepolia" ?
+        document.getElementById("sepoliaBalance").innerText :
+        usdcBalance.toFixed(2);
+      document.getElementById("bridgeAvailable").innerText = bal;
     }
 
     function swapChains() {
