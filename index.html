@@ -146,6 +146,12 @@
       <option value="USDC">USDC</option>
       <option value="EURC">EURC</option>
     </select>
+    <div class="chain-swap-icon" onclick="swapTokens()">⇅</div>
+    <label>To Token</label>
+    <select id="tokenOut" onchange="updateSwapRate()">
+      <option value="EURC">EURC</option>
+      <option value="USDC">USDC</option>
+    </select>
     <div class="token-available">Available: <span id="swapAvailable">0.00</span></div>
     <label>Amount</label>
     <input id="swapAmount" type="number" placeholder="0.01" oninput="updateSwapRate()" />
@@ -155,12 +161,6 @@
       <div class="pct-btn" onclick="setPctSwap(75)">75%</div>
       <div class="pct-btn" onclick="setPctSwap(100)">Max</div>
     </div>
-    <div class="chain-swap-icon" onclick="swapTokens()">⇅</div>
-    <label>To Token</label>
-    <select id="tokenOut" onchange="updateSwapRate()">
-      <option value="EURC">EURC</option>
-      <option value="USDC">USDC</option>
-    </select>
     <div class="token-available">You receive: <span id="swapReceiveSpan">0.00</span></div>
     <input id="swapReceive" placeholder="0.00" readonly style="color:#a855f7" />
     <button class="btn btn-green" onclick="doSwap()">Swap Tokens →</button>
