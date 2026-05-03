@@ -48,6 +48,19 @@
     .stat-label { font-size: 11px; color: #64748b; margin-top: 2px; }
     .token-available { font-size: 11px; color: #64748b; text-align: right; margin-top: -6px; margin-bottom: 8px; }
     .chain-swap-icon { text-align: center; font-size: 1.5rem; margin: -8px 0 8px; cursor: pointer; }
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; }
+    .modal-overlay.active { display: flex; }
+    .modal { background: #0f0f2e; border: 1px solid #6366f1; border-radius: 20px; padding: 24px; width: 90%; max-width: 400px; }
+    .modal-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 16px; text-align: center; }
+    .modal-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #1e1e4a; font-size: 14px; }
+    .modal-row:last-of-type { border-bottom: none; }
+    .modal-label { color: #64748b; }
+    .modal-value { color: white; font-weight: 600; }
+    .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
+    .modal-cancel { flex: 1; padding: 14px; border-radius: 12px; border: 1px solid #6366f1; background: transparent; color: #6366f1; font-size: 15px; font-weight: 700; cursor: pointer; }
+    .modal-confirm { flex: 1; padding: 14px; border-radius: 12px; border: none; background: linear-gradient(135deg, #6366f1, #a855f7); color: white; font-size: 15px; font-weight: 700; cursor: pointer; }
+    .modal-confirm.green { background: linear-gradient(135deg, #059669, #10b981); }
+    .modal-confirm.blue { background: linear-gradient(135deg, #0ea5e9, #06b6d4); }
   </style>
 </head>
 <body>
@@ -186,6 +199,18 @@
     <button class="btn btn-outline" onclick="checkBalance()">Check Balance</button>
     <button class="btn btn-green" onclick="withdraw()">Withdraw (Owner)</button>
   </div>
+  <!-- Confirmation Modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <div class="modal-title" id="modalTitle">Confirm Transaction</div>
+      <div id="modalRows"></div>
+      <div class="modal-buttons">
+        <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+        <button class="modal-confirm" id="modalConfirmBtn" onclick="executeConfirmed()">Confirm</button>
+      </div>
+    </div>
+  </div>
+
   <div class="status-box" id="status">Connect your wallet to get started.</div>
   <script>
     const TIPJAR_ADDRESS = "0x489E68cD48156f82BD9d24bD307c678fcCA27d0E";
@@ -375,11 +400,20 @@
     }
 
     async function doBridge() {
+      const fromChain = document.getElementById("bridgeFrom").value;
+      const toChain = document.getElementById("bridgeTo").value;
+      const amount = document.getElementById("bridgeAmount").value;
+      if (!amount) { setStatus("Enter an amount!", "error"); return; }
+      const fromLabel = fromChain === "Ethereum_Sepolia" ? "Ethereum Sepolia" : "Arc Testnet";
+      const toLabel = toChain === "Arc_Testnet" ? "Arc Testnet" : "Ethereum Sepolia";
+      showModal("🌉 Confirm Bridge", [
+        ["Amount", amount + " USDC"],
+        ["From", fromLabel],
+        ["To", toLabel],
+        ["Protocol", "CCTP"],
+        ["Time", "~20-60 seconds"]
+      ], "blue", async () => {
       try {
-        const fromChain = document.getElementById("bridgeFrom").value;
-        const toChain = document.getElementById("bridgeTo").value;
-        const amount = document.getElementById("bridgeAmount").value;
-        if (!amount) { setStatus("Enter an amount!", "error"); return; }
         setStatus("🌉 Bridging " + amount + " USDC... (takes 20-60 seconds)", "loading");
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 120000);
@@ -397,14 +431,23 @@
         if (e.name === "AbortError") { setStatus("⏱️ Bridge taking longer than usual. Check testnet.arcscan.app for your TX.", "loading"); }
         else { setStatus("❌ " + e.message, "error"); }
       }
+      });
     }
 
     async function doSwap() {
+      const tokenIn = document.getElementById("tokenIn").value;
+      const tokenOut = document.getElementById("tokenOut").value;
+      const amountIn = document.getElementById("swapAmount").value;
+      if (!amountIn) { setStatus("Enter an amount!", "error"); return; }
+      const rate = tokenIn === "USDC" ? 0.9268 : 1.08;
+      const estimated = (parseFloat(amountIn) * rate).toFixed(4);
+      showModal("🔄 Confirm Swap", [
+        ["From", amountIn + " " + tokenIn],
+        ["To (estimated)", estimated + " " + tokenOut],
+        ["Fee", "~0.000002 USDC"],
+        ["Network", "Arc Testnet"]
+      ], "green", async () => {
       try {
-        const tokenIn = document.getElementById("tokenIn").value;
-        const tokenOut = document.getElementById("tokenOut").value;
-        const amountIn = document.getElementById("swapAmount").value;
-        if (!amountIn) { setStatus("Enter an amount!", "error"); return; }
         setStatus("🔄 Swapping " + amountIn + " " + tokenIn + "...", "loading");
         const res = await fetch(BACKEND + "/swap", {
           method: "POST",
@@ -415,6 +458,7 @@
         if (data.success) { setStatus("✅ Swapped! Got " + data.amountOut + " " + tokenOut, "success"); fetchBalances(); }
         else { setStatus("❌ " + data.error, "error"); }
       } catch(e) { setStatus("❌ " + e.message, "error"); }
+      });
     }
 
     async function sendTip() {
@@ -464,6 +508,29 @@
         document.getElementById("jarBalance").innerText = ethers.utils.formatUnits(bal, 6);
         document.getElementById("jarTips").innerText = ethers.utils.formatUnits(total, 6);
       } catch(e) {}
+    }
+
+    let pendingAction = null;
+
+    function showModal(title, rows, confirmClass, action) {
+      document.getElementById("modalTitle").innerText = title;
+      const rowsHtml = rows.map(r => 
+        '<div class="modal-row"><span class="modal-label">' + r[0] + '</span><span class="modal-value">' + r[1] + '</span></div>'
+      ).join('');
+      document.getElementById("modalRows").innerHTML = rowsHtml;
+      document.getElementById("modalConfirmBtn").className = "modal-confirm " + (confirmClass || "");
+      document.getElementById("modalOverlay").classList.add("active");
+      pendingAction = action;
+    }
+
+    function closeModal() {
+      document.getElementById("modalOverlay").classList.remove("active");
+      pendingAction = null;
+    }
+
+    async function executeConfirmed() {
+      closeModal();
+      if (pendingAction) await pendingAction();
     }
 
     function setStatus(msg, type) {
