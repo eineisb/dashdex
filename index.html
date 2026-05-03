@@ -28,7 +28,7 @@
 
     const chains = [arcTestnet];
     const config = defaultWagmiConfig({ chains, projectId, metadata });
-    const modal = createWeb3Modal({ wagmiConfig: config, projectId, chains });
+    const modal = createWeb3Modal({ wagmiConfig: config, projectId, chains, featuredWalletIds: [], includeWalletIds: [], enableEIP6963: true, enableInjected: true, enableCoinbase: true });
 
     window.openWeb3Modal = () => modal.open();
     window.web3modal = modal;
@@ -306,7 +306,7 @@
 
     function showWalletModal() {
       if (window.openWeb3Modal) {
-        window.openWeb3Modal();
+        window.openWeb3Modal({ view: 'Connect' });
       } else {
         document.getElementById("walletModalOverlay").classList.add("active");
       }
