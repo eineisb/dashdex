@@ -529,8 +529,9 @@
     }
 
     async function executeConfirmed() {
+      const action = pendingAction;
       closeModal();
-      if (pendingAction) await pendingAction();
+      if (action) await action();
     }
 
     function setStatus(msg, type) {
