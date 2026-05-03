@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dash.dex</title>
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@web3modal/standalone@2.4.1/dist/index.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Segoe UI', sans-serif; background: #060614; color: white; min-height: 100vh; }
@@ -315,8 +317,20 @@
 
     async function connectWallet() {
       try {
-        if (!window.ethereum) { setStatus("No wallet found. Use MetaMask browser.", "error"); return; }
-        provider = new ethers.providers.Web3Provider(window.ethereum);
+        let web3Provider;
+        if (window.ethereum) {
+          web3Provider = window.ethereum;
+        } else {
+          const WalletConnectProvider = window.WalletConnectProvider.default;
+          const wcProvider = new WalletConnectProvider({
+            rpc: { 5042002: "https://rpc.testnet.arc.network" },
+            chainId: 5042002,
+            qrcodeModalOptions: { mobileLinks: ["metamask", "trust", "rainbow", "argent"] }
+          });
+          await wcProvider.enable();
+          web3Provider = wcProvider;
+        }
+        provider = new ethers.providers.Web3Provider(web3Provider);
         await provider.send("eth_requestAccounts", []);
         const network = await provider.getNetwork();
         if (network.chainId !== ARC_CHAIN_ID) {
