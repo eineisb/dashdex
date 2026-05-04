@@ -3,650 +3,418 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dash.dex</title>
+  <title>Dash.dex — Arc Testnet</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <script type="module">
     import { createWeb3Modal, defaultWagmiConfig } from "https://cdn.jsdelivr.net/npm/@web3modal/wagmi@5.1.11/dist/index.js";
-    import { mainnet } from "https://cdn.jsdelivr.net/npm/viem@2.21.0/chains/index.js";
-
     const projectId = "b56e18d47c72ab683b10814fe9495694";
-    const metadata = {
-      name: "Dash.dex",
-      description: "Your personal DEX on Arc Testnet",
-      url: "https://eineisb.github.io/dashdex",
-      icons: ["https://avatars.githubusercontent.com/u/37784886"]
-    };
-
-    const arcTestnet = {
-      id: 5042002,
-      name: "Arc Testnet",
-      network: "arc-testnet",
-      nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 6 },
-      rpcUrls: { default: { http: ["https://rpc.testnet.arc.network"] } },
-      blockExplorers: { default: { name: "ArcScan", url: "https://testnet.arcscan.app" } }
-    };
-
+    const metadata = { name: "Dash.dex", description: "Professional DEX on Arc Testnet", url: "https://eineisb.github.io/dashdex", icons: ["https://avatars.githubusercontent.com/u/37784886"] };
+    const arcTestnet = { id: 5042002, name: "Arc Testnet", network: "arc-testnet", nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 6 }, rpcUrls: { default: { http: ["https://rpc.testnet.arc.network"] } }, blockExplorers: { default: { name: "ArcScan", url: "https://testnet.arcscan.app" } } };
     const chains = [arcTestnet];
     const config = defaultWagmiConfig({ chains, projectId, metadata });
-    const modal = createWeb3Modal({ wagmiConfig: config, projectId, chains, featuredWalletIds: [], includeWalletIds: [], enableEIP6963: true, enableInjected: true, enableCoinbase: true });
-
-    window.openWeb3Modal = () => modal.open();
-    window.web3modal = modal;
-  </script>
-  <script src="https://cdn.jsdelivr.net/npm/@web3modal/standalone@2.4.1/dist/index.umd.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Segoe UI', sans-serif; background: #060614; color: white; min-height: 100vh; }
-    .header { background: linear-gradient(135deg, #1a1a3e 0%, #0d0d2b 100%); padding: 20px; text-align: center; border-bottom: 1px solid #2d2d6b; }
-    .logo { font-size: 2rem; font-weight: 900; background: linear-gradient(90deg, #6366f1, #a855f7, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .subtitle { color: #6366f1; font-size: 13px; margin-top: 4px; }
-    .wallet-bar { margin: 16px; background: #0f0f2e; border: 1px solid #2d2d6b; border-radius: 16px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; }
-    .wallet-address { font-size: 14px; color: #a855f7; font-weight: 600; }
-    .wallet-info { font-size: 13px; color: #94a3b8; }
-    .btn-connect { background: linear-gradient(135deg, #6366f1, #a855f7); color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 14px; }
-    .network-badge { background: #1a1a3e; border: 1px solid #6366f1; color: #6366f1; padding: 4px 10px; border-radius: 20px; font-size: 11px; margin-top: 4px; display: inline-block; }
-    .balance-row { display: none; gap: 8px; margin: 0 16px 16px; }
-    .balance-card { flex: 1; background: #0f0f2e; border: 1px solid #1e1e4a; border-radius: 14px; padding: 12px; text-align: center; }
-    .balance-token { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
-    .balance-amount { font-size: 1rem; font-weight: 700; color: white; margin: 4px 0 2px; }
-    .balance-usd { font-size: 11px; color: #a855f7; }
-    .tabs { display: flex; gap: 6px; padding: 0 16px; margin-bottom: 16px; overflow-x: auto; }
-    .tab { flex: 1; min-width: 70px; padding: 10px 6px; text-align: center; border-radius: 12px; cursor: pointer; font-size: 12px; font-weight: 600; background: #0f0f2e; color: #64748b; border: 1px solid #1e1e4a; white-space: nowrap; }
-    .tab.active { background: linear-gradient(135deg, #6366f1, #a855f7); color: white; border-color: transparent; }
-    .card { background: #0f0f2e; border: 1px solid #1e1e4a; border-radius: 20px; padding: 20px; margin: 0 16px; display: none; }
-    .card.active { display: block; }
-    .card-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 20px; }
-    label { font-size: 12px; color: #64748b; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-    input, select { width: 100%; padding: 14px; margin-bottom: 8px; border-radius: 12px; border: 1px solid #1e1e4a; background: #060614; color: white; font-size: 15px; outline: none; }
-    input:focus, select:focus { border-color: #6366f1; }
-    select option { background: #0f0f2e; }
-    .pct-row { display: flex; gap: 6px; margin-bottom: 16px; }
-    .pct-btn { flex: 1; padding: 7px; background: #1a1a3e; border: 1px solid #2d2d6b; border-radius: 8px; color: #6366f1; font-size: 12px; font-weight: 600; cursor: pointer; text-align: center; }
-    .btn { width: 100%; padding: 16px; border-radius: 14px; border: none; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 4px; }
-    .btn-purple { background: linear-gradient(135deg, #6366f1, #a855f7); color: white; }
-    .btn-green { background: linear-gradient(135deg, #059669, #10b981); color: white; }
-    .btn-blue { background: linear-gradient(135deg, #0ea5e9, #06b6d4); color: white; }
-    .btn-outline { background: transparent; border: 1px solid #6366f1; color: #6366f1; margin-top: 8px; }
-    .status-box { margin: 16px; padding: 16px; background: #0f0f2e; border: 1px solid #1e1e4a; border-radius: 16px; text-align: center; color: #64748b; font-size: 14px; line-height: 1.6; }
-    .status-box.success { border-color: #059669; color: #34d399; background: #052e16; }
-    .status-box.error { border-color: #dc2626; color: #f87171; background: #2d0a0a; }
-    .status-box.loading { border-color: #6366f1; color: #a5b4fc; background: #1a1a3e; }
-    .stats-row { display: flex; gap: 10px; margin-bottom: 16px; }
-    .stat-box { flex: 1; background: #060614; border: 1px solid #1e1e4a; border-radius: 12px; padding: 12px; text-align: center; }
-    .stat-value { font-size: 1.1rem; font-weight: 700; color: #a855f7; }
-    .stat-label { font-size: 11px; color: #64748b; margin-top: 2px; }
-    .token-available { font-size: 11px; color: #64748b; text-align: right; margin-top: -6px; margin-bottom: 8px; }
-    .chain-swap-icon { text-align: center; font-size: 1.5rem; margin: -8px 0 8px; cursor: pointer; }
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; }
-    .modal-overlay.active { display: flex; }
-    .modal { background: #0f0f2e; border: 1px solid #6366f1; border-radius: 20px; padding: 24px; width: 90%; max-width: 400px; }
-    .modal-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 16px; text-align: center; }
-    .modal-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #1e1e4a; font-size: 14px; }
-    .modal-row:last-of-type { border-bottom: none; }
-    .modal-label { color: #64748b; }
-    .modal-value { color: white; font-weight: 600; }
-    .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
-    .modal-cancel { flex: 1; padding: 14px; border-radius: 12px; border: 1px solid #6366f1; background: transparent; color: #6366f1; font-size: 15px; font-weight: 700; cursor: pointer; }
-    .wallet-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: flex-end; }
-    .wallet-modal-overlay.active { display: flex; }
-    .wallet-modal { background: #0f0f2e; border: 1px solid #2d2d6b; border-radius: 24px 24px 0 0; padding: 24px; width: 100%; max-width: 480px; }
-    .wallet-modal-title { font-size: 1.1rem; font-weight: 700; text-align: center; margin-bottom: 20px; color: white; }
-    .wallet-option { display: flex; align-items: center; gap: 16px; padding: 16px; background: #060614; border: 1px solid #1e1e4a; border-radius: 14px; margin-bottom: 10px; cursor: pointer; transition: all 0.2s; }
-    .wallet-option:hover { border-color: #6366f1; background: #1a1a3e; }
-    .wallet-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
-    .wallet-name { font-size: 15px; font-weight: 600; color: white; }
-    .wallet-desc { font-size: 12px; color: #64748b; margin-top: 2px; }
-    .wallet-close { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #334155; background: transparent; color: #64748b; font-size: 15px; cursor: pointer; margin-top: 8px; }
-    .modal-confirm { flex: 1; padding: 14px; border-radius: 12px; border: none; background: linear-gradient(135deg, #6366f1, #a855f7); color: white; font-size: 15px; font-weight: 700; cursor: pointer; }
-    .modal-confirm.green { background: linear-gradient(135deg, #059669, #10b981); }
-    .modal-confirm.blue { background: linear-gradient(135deg, #0ea5e9, #06b6d4); }
+    const modal = createWeb3Modal({ wagmiConfig: config, projectId, chains, enableEIP6963: true, enableInjected: true, enableCoinbase: true });
+    window.openWeb3Modal = () => modal.open({ view: 'Connect' });
+  </script><style>
+    :root{--bg:#080810;--surface:#0e0e1a;--surface2:#13131f;--border:rgba(255,255,255,0.06);--border-active:rgba(255,255,255,0.15);--text:#f0f0f5;--text-muted:#5a5a7a;--text-secondary:#9090b0;--accent:#4f6ef7;--accent-hover:#3d5ce8;--accent-glow:rgba(79,110,247,0.15);--green:#22c55e;--green-bg:rgba(34,197,94,0.08);--red:#ef4444;--red-bg:rgba(239,68,68,0.08);--font-display:'Syne',sans-serif;--font-mono:'DM Mono',monospace;}
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+    body{font-family:var(--font-display);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+    body::before{content:'';position:fixed;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(ellipse at 30% 20%,rgba(79,110,247,0.04) 0%,transparent 50%),radial-gradient(ellipse at 70% 80%,rgba(79,110,247,0.03) 0%,transparent 50%);pointer-events:none;z-index:0;}
+    .header{position:sticky;top:0;z-index:100;background:rgba(8,8,16,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 20px;height:60px;display:flex;align-items:center;justify-content:space-between;}
+    .logo-mark{display:flex;align-items:center;gap:10px;}
+    .logo-icon{width:28px;height:28px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:white;}
+    .logo-text{font-size:17px;font-weight:800;letter-spacing:-0.5px;}
+    .logo-text span{color:var(--accent);}
+    .header-right{display:flex;align-items:center;gap:10px;}
+    .network-pill{display:flex;align-items:center;gap:6px;padding:5px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:100px;font-size:11px;font-weight:600;color:var(--text-secondary);font-family:var(--font-mono);}
+    .network-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:pulse 2s infinite;}
+    @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+    .btn-connect{padding:8px 16px;background:var(--accent);color:white;border:none;border-radius:10px;font-family:var(--font-display);font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s;}
+    .btn-connect.connected{background:var(--surface2);border:1px solid var(--border);color:var(--text-secondary);font-family:var(--font-mono);font-size:12px;}
+    .balance-bar{display:none;padding:12px 20px;background:var(--surface);border-bottom:1px solid var(--border);gap:8px;overflow-x:auto;}
+    .balance-bar.visible{display:flex;}
+    .balance-chip{display:flex;align-items:center;padding:8px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;white-space:nowrap;flex-shrink:0;}
+    .balance-chip-token{font-size:10px;font-weight:700;color:var(--text-muted);font-family:var(--font-mono);letter-spacing:1px;text-transform:uppercase;}
+    .balance-chip-amount{font-size:14px;font-weight:700;color:var(--text);font-family:var(--font-mono);}
+    .balance-chip-usd{font-size:11px;color:var(--text-muted);font-family:var(--font-mono);}
+    .balance-chip.total{border-color:rgba(79,110,247,0.3);background:var(--accent-glow);}
+    .balance-chip.total .balance-chip-amount{color:var(--accent);}
+    .main{position:relative;z-index:1;max-width:480px;margin:0 auto;padding:20px 16px 100px;}
+    .tabs{display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:4px;margin-bottom:16px;}
+    .tab{padding:9px 6px;text-align:center;border-radius:10px;cursor:pointer;font-size:12px;font-weight:700;color:var(--text-muted);border:none;background:transparent;transition:all 0.2s;}
+    .tab.active{background:var(--surface2);color:var(--text);border:1px solid var(--border-active);}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:20px;display:none;}
+    .card.active{display:block;}
+    .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+    .card-title{font-size:16px;font-weight:800;color:var(--text);letter-spacing:-0.3px;}
+    .card-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:100px;font-family:var(--font-mono);letter-spacing:0.5px;}
+    .badge-green{background:var(--green-bg);color:var(--green);border:1px solid rgba(34,197,94,0.2);}
+    .badge-blue{background:var(--accent-glow);color:var(--accent);border:1px solid rgba(79,110,247,0.2);}
+    .input-group{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:4px;transition:border-color 0.2s;}
+    .input-group:focus-within{border-color:var(--border-active);}
+    .input-label{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;font-family:var(--font-mono);margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;}
+    .input-available{font-size:10px;color:var(--text-muted);font-family:var(--font-mono);}
+    .input-row{display:flex;align-items:center;gap:10px;}
+    .input-field{flex:1;background:none;border:none;outline:none;font-family:var(--font-mono);font-size:22px;font-weight:500;color:var(--text);width:100%;}
+    .input-field::placeholder{color:var(--text-muted);}
+    .token-badge{display:flex;align-items:center;gap:6px;padding:6px 12px;background:var(--bg);border:1px solid var(--border);border-radius:100px;font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;}
+    .token-dot{width:8px;height:8px;border-radius:50%;}
+    .token-select{background:none;border:none;outline:none;font-family:var(--font-display);font-size:13px;font-weight:700;color:var(--text);cursor:pointer;appearance:none;-webkit-appearance:none;}
+    .token-select option{background:var(--surface2);color:var(--text);}
+    .pct-row{display:flex;gap:6px;margin:8px 0 12px;}
+    .pct-btn{flex:1;padding:6px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text-muted);font-size:11px;font-weight:700;cursor:pointer;text-align:center;transition:all 0.15s;font-family:var(--font-mono);}
+    .pct-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-glow);}
+    .swap-arrow{display:flex;align-items:center;justify-content:center;margin:4px 0;}
+    .swap-arrow-btn{width:36px;height:36px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;color:var(--text-muted);font-size:16px;}
+    .swap-arrow-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-glow);}
+    .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+    .stat-box{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center;}
+    .stat-value{font-size:14px;font-weight:700;color:var(--text);font-family:var(--font-mono);}
+    .stat-label{font-size:10px;color:var(--text-muted);margin-top:3px;font-family:var(--font-mono);letter-spacing:0.5px;}
+    .bridge-balances{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
+    .bridge-bal-box{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;}
+    .bridge-bal-label{font-size:10px;color:var(--text-muted);font-family:var(--font-mono);letter-spacing:0.5px;margin-bottom:4px;}
+    .bridge-bal-value{font-size:16px;font-weight:700;color:var(--text);font-family:var(--font-mono);}
+    .btn-primary{width:100%;padding:15px;background:var(--accent);color:white;border:none;border-radius:14px;font-family:var(--font-display);font-size:15px;font-weight:800;cursor:pointer;transition:all 0.2s;margin-top:8px;}
+    .btn-primary:hover{background:var(--accent-hover);transform:translateY(-1px);box-shadow:0 8px 24px rgba(79,110,247,0.25);}
+    .btn-primary.green{background:#16a34a;}
+    .btn-primary.blue{background:#0284c7;}
+    .btn-secondary{background:var(--surface2);border:1px solid var(--border);color:var(--text-secondary);}
+    .btn-secondary:hover{border-color:var(--border-active);background:var(--surface);box-shadow:none;transform:none;}
+    .jar-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
+    .jar-stat{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;}
+    .jar-stat-value{font-size:18px;font-weight:700;color:var(--text);font-family:var(--font-mono);}
+    .jar-stat-label{font-size:10px;color:var(--text-muted);margin-top:4px;font-family:var(--font-mono);letter-spacing:0.5px;}
+    .status-box{margin-top:16px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:14px;font-size:13px;color:var(--text-muted);line-height:1.5;font-family:var(--font-mono);min-height:48px;display:flex;align-items:center;}
+    .status-box.success{border-color:rgba(34,197,94,0.3);color:var(--green);background:var(--green-bg);}
+    .status-box.error{border-color:rgba(239,68,68,0.3);color:var(--red);background:var(--red-bg);}
+    .status-box.loading{border-color:rgba(79,110,247,0.3);color:var(--accent);background:var(--accent-glow);}
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1000;justify-content:center;align-items:flex-end;backdrop-filter:blur(4px);}
+    .modal-overlay.active{display:flex;}
+    .modal{background:var(--surface);border:1px solid var(--border);border-radius:24px 24px 0 0;padding:28px 24px 36px;width:100%;max-width:480px;animation:slideUp 0.25s ease;}
+    @keyframes slideUp{from{transform:translateY(20px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+    .modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px;}
+    .modal-title{font-size:18px;font-weight:800;text-align:center;margin-bottom:20px;letter-spacing:-0.3px;}
+    .modal-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);}
+    .modal-row:last-of-type{border-bottom:none;}
+    .modal-row-label{color:var(--text-muted);font-family:var(--font-mono);font-size:12px;}
+    .modal-row-value{font-weight:700;font-family:var(--font-mono);color:var(--text);}
+    .modal-buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px;}
+    .modal-cancel{padding:14px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--text-secondary);font-family:var(--font-display);font-size:14px;font-weight:700;cursor:pointer;}
+    .modal-confirm{padding:14px;border-radius:12px;border:none;background:var(--accent);color:white;font-family:var(--font-display);font-size:14px;font-weight:800;cursor:pointer;}
+    .modal-confirm.green{background:#16a34a;}
+    .modal-confirm.blue{background:#0284c7;}
+    .wallet-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:2000;justify-content:center;align-items:flex-end;backdrop-filter:blur(4px);}
+    .wallet-modal-overlay.active{display:flex;}
+    .wallet-modal{background:var(--surface);border:1px solid var(--border);border-radius:24px 24px 0 0;padding:28px 20px 36px;width:100%;max-width:480px;animation:slideUp 0.25s ease;}
+    .wallet-modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 24px;}
+    .wallet-modal-title{font-size:18px;font-weight:800;text-align:center;margin-bottom:6px;}
+    .wallet-modal-sub{font-size:12px;color:var(--text-muted);text-align:center;margin-bottom:20px;font-family:var(--font-mono);}
+    .wallet-option{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:14px;margin-bottom:8px;cursor:pointer;transition:all 0.2s;}
+    .wallet-option:hover{border-color:var(--border-active);}
+    .wallet-option-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+    .wallet-option-name{font-size:15px;font-weight:700;color:var(--text);}
+    .wallet-option-desc{font-size:11px;color:var(--text-muted);margin-top:2px;font-family:var(--font-mono);}
+    .wallet-option-arrow{color:var(--text-muted);font-size:18px;margin-left:auto;}
+    .wallet-close{width:100%;padding:14px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-family:var(--font-display);font-size:14px;font-weight:600;cursor:pointer;margin-top:8px;}
+    ::-webkit-scrollbar{width:4px;height:4px;}
+    ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
   </style>
 </head>
 <body>
-  <div class="header">
-    <div class="logo">⚡ Dash.dex</div>
-    <div class="subtitle">Built on Arc Testnet • Powered by Circle</div>
+  <header class="header">
+    <div class="logo-mark">
+      <div class="logo-icon">D</div>
+      <div class="logo-text">Dash<span>.dex</span></div>
+    </div>
+    <div class="header-right">
+      <div class="network-pill"><div class="network-dot"></div>Arc Testnet</div>
+      <button class="btn-connect" id="connectBtn" onclick="signer ? toggleWallet() : showWalletModal()">Connect</button>
+    </div>
+  </header>
+  <div class="balance-bar" id="balanceBar">
+    <div class="balance-chip"><div><div class="balance-chip-token">USDC</div><div class="balance-chip-amount" id="usdcBal">0.00</div><div class="balance-chip-usd" id="usdcUsd">≈ $0.00</div></div></div>
+    <div class="balance-chip"><div><div class="balance-chip-token">EURC</div><div class="balance-chip-amount" id="eurcBal">0.00</div><div class="balance-chip-usd" id="eurcUsd">≈ $0.00</div></div></div>
+    <div class="balance-chip total"><div><div class="balance-chip-token">Total</div><div class="balance-chip-amount" id="totalBal">$0.00</div><div class="balance-chip-usd">USD Value</div></div></div>
   </div>
-  <div class="wallet-bar">
-    <div>
-      <div class="wallet-address" id="walletAddress">Not connected</div>
-      <div class="wallet-info" id="walletBalance"></div>
-      <div class="network-badge" id="networkBadge">Arc Testnet</div>
+  <main class="main">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('send', this)">Send</button>
+      <button class="tab" onclick="switchTab('bridge', this)">Bridge</button>
+      <button class="tab" onclick="switchTab('swap', this)">Swap</button>
+      <button class="tab" onclick="switchTab('tipjar', this)">Tip Jar</button>
     </div>
-    <button class="btn-connect" id="connectBtn" onclick="signer ? toggleWallet() : showWalletModal()">Connect</button>
-  </div>
-  <div class="balance-row" id="balanceRow">
-    <div class="balance-card">
-      <div class="balance-token">USDC</div>
-      <div class="balance-amount" id="usdcBal">0.00</div>
-      <div class="balance-usd" id="usdcUsd">=$0.00</div>
+    <div class="card active" id="tab-send">
+      <div class="card-header"><div class="card-title">Send USDC</div><div class="card-badge badge-green">INSTANT</div></div>
+      <div class="input-group"><div class="input-label">Recipient Address</div><input class="input-field" id="sendTo" placeholder="0x..." style="font-size:13px"/></div>
+      <div class="input-group" style="margin-top:8px"><div class="input-label">Amount<span class="input-available">Available: <span id="sendAvailable">0.00</span> USDC</span></div><div class="input-row"><input class="input-field" id="sendAmount" type="number" placeholder="0.00"/><div class="token-badge"><div class="token-dot" style="background:#2775ca"></div>USDC</div></div></div>
+      <div class="pct-row"><div class="pct-btn" onclick="setPct('sendAmount',25)">25%</div><div class="pct-btn" onclick="setPct('sendAmount',50)">50%</div><div class="pct-btn" onclick="setPct('sendAmount',75)">75%</div><div class="pct-btn" onclick="setPct('sendAmount',100)">MAX</div></div>
+      <button class="btn-primary" onclick="doSend()">Send</button>
     </div>
-    <div class="balance-card">
-      <div class="balance-token">EURC</div>
-      <div class="balance-amount" id="eurcBal">0.00</div>
-      <div class="balance-usd" id="eurcUsd">=$0.00</div>
+    <div class="card" id="tab-bridge">
+      <div class="card-header"><div class="card-title">Bridge USDC</div><div class="card-badge badge-blue">CCTP</div></div>
+      <div class="bridge-balances"><div class="bridge-bal-box"><div class="bridge-bal-label">SEPOLIA USDC</div><div class="bridge-bal-value" id="sepoliaBalance">0.00</div></div><div class="bridge-bal-box"><div class="bridge-bal-label">ARC USDC</div><div class="bridge-bal-value" id="arcBridgeBalance">0.00</div></div></div>
+      <div class="stats-row"><div class="stat-box"><div class="stat-value">~30s</div><div class="stat-label">TIME</div></div><div class="stat-box"><div class="stat-value">0%</div><div class="stat-label">SLIPPAGE</div></div><div class="stat-box"><div class="stat-value">CCTP</div><div class="stat-label">PROTOCOL</div></div></div>
+      <div class="input-group"><div class="input-label">From Chain</div><div class="input-row"><select class="token-select" id="bridgeFrom" onchange="updateBridgeAvailable()" style="flex:1;font-size:14px"><option value="Ethereum_Sepolia">Ethereum Sepolia</option><option value="Arc_Testnet">Arc Testnet</option></select></div></div>
+      <div class="swap-arrow"><div class="swap-arrow-btn" onclick="swapChains()">⇅</div></div>
+      <div class="input-group"><div class="input-label">To Chain</div><div class="input-row"><select class="token-select" id="bridgeTo" style="flex:1;font-size:14px"><option value="Arc_Testnet">Arc Testnet</option><option value="Ethereum_Sepolia">Ethereum Sepolia</option></select></div></div>
+      <div class="input-group" style="margin-top:8px"><div class="input-label">Amount<span class="input-available">Available: <span id="bridgeAvailable">0.00</span></span></div><div class="input-row"><input class="input-field" id="bridgeAmount" type="number" placeholder="0.00"/><div class="token-badge"><div class="token-dot" style="background:#2775ca"></div>USDC</div></div></div>
+      <div class="pct-row"><div class="pct-btn" onclick="setPctBridge(25)">25%</div><div class="pct-btn" onclick="setPctBridge(50)">50%</div><div class="pct-btn" onclick="setPctBridge(75)">75%</div><div class="pct-btn" onclick="setPctBridge(100)">MAX</div></div>
+      <button class="btn-primary blue" onclick="doBridge()">Bridge</button>
     </div>
-    <div class="balance-card">
-      <div class="balance-token">TOTAL</div>
-      <div class="balance-amount" id="totalBal">$0.00</div>
-      <div class="balance-usd">USD Value</div>
+    <div class="card" id="tab-swap">
+      <div class="card-header"><div class="card-title">Swap</div><div class="card-badge badge-green">ARC TESTNET</div></div>
+      <div class="stats-row"><div class="stat-box"><div class="stat-value" id="swapRate">—</div><div class="stat-label">RATE</div></div><div class="stat-box"><div class="stat-value">LOW</div><div class="stat-label">FEES</div></div><div class="stat-box"><div class="stat-value">APP KIT</div><div class="stat-label">PROTOCOL</div></div></div>
+      <div class="input-group"><div class="input-label">You Pay<span class="input-available">Balance: <span id="swapAvailable">0.00</span></span></div><div class="input-row"><input class="input-field" id="swapAmount" type="number" placeholder="0.00" oninput="updateSwapRate()"/><div class="token-badge"><div class="token-dot" style="background:#2775ca"></div><select class="token-select" id="tokenIn" onchange="updateSwapRate()"><option value="USDC">USDC</option><option value="EURC">EURC</option></select></div></div></div>
+      <div class="pct-row"><div class="pct-btn" onclick="setPctSwap(25)">25%</div><div class="pct-btn" onclick="setPctSwap(50)">50%</div><div class="pct-btn" onclick="setPctSwap(75)">75%</div><div class="pct-btn" onclick="setPctSwap(100)">MAX</div></div>
+      <div class="swap-arrow"><div class="swap-arrow-btn" onclick="swapTokens()">⇅</div></div>
+      <div class="input-group"><div class="input-label">You Receive (est.)</div><div class="input-row"><input class="input-field" id="swapReceive" placeholder="0.00" readonly/><div class="token-badge"><div class="token-dot" style="background:#26a17b"></div><select class="token-select" id="tokenOut" onchange="updateSwapRate()"><option value="EURC">EURC</option><option value="USDC">USDC</option></select></div></div></div>
+      <button class="btn-primary green" onclick="doSwap()">Swap</button>
     </div>
-  </div>
-  <div class="tabs">
-    <button class="tab active" onclick="switchTab('send', this)">💸 Send</button>
-    <button class="tab" onclick="switchTab('bridge', this)">🌉 Bridge</button>
-    <button class="tab" onclick="switchTab('swap', this)">🔄 Swap</button>
-    <button class="tab" onclick="switchTab('tipjar', this)">🫙 Tip Jar</button>
-  </div>
-  <div class="card active" id="tab-send">
-    <div class="card-title">💸 Send USDC</div>
-    <label>Recipient Address</label>
-    <input id="sendTo" placeholder="0x..." />
-    <label>Amount (USDC)</label>
-    <div class="token-available">Available: <span id="sendAvailable">0.00</span> USDC</div>
-    <input id="sendAmount" type="number" placeholder="1.00" />
-    <div class="pct-row">
-      <div class="pct-btn" onclick="setPct('sendAmount',25)">25%</div>
-      <div class="pct-btn" onclick="setPct('sendAmount',50)">50%</div>
-      <div class="pct-btn" onclick="setPct('sendAmount',75)">75%</div>
-      <div class="pct-btn" onclick="setPct('sendAmount',100)">Max</div>
+    <div class="card" id="tab-tipjar">
+      <div class="card-header"><div class="card-title">Tip Jar</div><div class="card-badge badge-blue">ON-CHAIN</div></div>
+      <div class="jar-stats"><div class="jar-stat"><div class="jar-stat-value" id="jarBalance">0.00</div><div class="jar-stat-label">JAR BALANCE</div></div><div class="jar-stat"><div class="jar-stat-value" id="jarTips">0.00</div><div class="jar-stat-label">TOTAL TIPS</div></div></div>
+      <div class="input-group"><div class="input-label">Amount<span class="input-available">Available: <span id="tipAvailable">0.00</span> USDC</span></div><div class="input-row"><input class="input-field" id="tipAmount" type="number" placeholder="0.00"/><div class="token-badge"><div class="token-dot" style="background:#2775ca"></div>USDC</div></div></div>
+      <div class="pct-row"><div class="pct-btn" onclick="setPct('tipAmount',25)">25%</div><div class="pct-btn" onclick="setPct('tipAmount',50)">50%</div><div class="pct-btn" onclick="setPct('tipAmount',75)">75%</div><div class="pct-btn" onclick="setPct('tipAmount',100)">MAX</div></div>
+      <div class="input-group" style="margin-top:4px"><div class="input-label">Message</div><input class="input-field" id="tipMessage" placeholder="Leave a message..." style="font-size:14px"/></div>
+      <button class="btn-primary" onclick="sendTip()">Send Tip</button>
+      <button class="btn-primary btn-secondary" onclick="checkBalance()">Check Balance</button>
+      <button class="btn-primary green btn-secondary" onclick="withdraw()">Withdraw</button>
     </div>
-    <button class="btn btn-purple" onclick="doSend()">Send USDC →</button>
-  </div>
-  <div class="card" id="tab-bridge">
-    <div class="card-title">🌉 Bridge USDC</div>
-    <div class="stats-row">
-      <div class="stat-box"><div class="stat-value" id="sepoliaBalance">0.00</div><div class="stat-label">Sepolia USDC</div></div>
-      <div class="stat-box"><div class="stat-value" id="arcBridgeBalance">0.00</div><div class="stat-label">Arc USDC</div></div>
-    </div>
-    <div class="stats-row">
-      <div class="stat-box"><div class="stat-value">~20s</div><div class="stat-label">Bridge Time</div></div>
-      <div class="stat-box"><div class="stat-value">CCTP</div><div class="stat-label">Protocol</div></div>
-      <div class="stat-box"><div class="stat-value">0%</div><div class="stat-label">Slippage</div></div>
-    </div>
-    <label>From Chain</label>
-    <select id="bridgeFrom" onchange="updateBridgeAvailable()">
-      <option value="Ethereum_Sepolia">Ethereum Sepolia</option>
-      <option value="Arc_Testnet">Arc Testnet</option>
-    </select>
-    <div class="chain-swap-icon" onclick="swapChains()">⇅</div>
-    <label>To Chain</label>
-    <select id="bridgeTo">
-      <option value="Arc_Testnet">Arc Testnet</option>
-      <option value="Ethereum_Sepolia">Ethereum Sepolia</option>
-    </select>
-    <label>Amount (USDC)</label>
-    <div class="token-available">Available: <span id="bridgeAvailable">0.00</span> USDC</div>
-    <input id="bridgeAmount" type="number" placeholder="0.01" />
-    <div class="pct-row">
-      <div class="pct-btn" onclick="setPctBridge(25)">25%</div>
-      <div class="pct-btn" onclick="setPctBridge(50)">50%</div>
-      <div class="pct-btn" onclick="setPctBridge(75)">75%</div>
-      <div class="pct-btn" onclick="setPctBridge(100)">Max</div>
-    </div>
-    <button class="btn btn-blue" onclick="doBridge()">Bridge USDC →</button>
-  </div>
-  <div class="card" id="tab-swap">
-    <div class="card-title">🔄 Swap Tokens</div>
-    <div class="stats-row">
-      <div class="stat-box"><div class="stat-value" id="swapRate">~0.93</div><div class="stat-label">Rate</div></div>
-      <div class="stat-box"><div class="stat-value">Arc</div><div class="stat-label">Network</div></div>
-      <div class="stat-box"><div class="stat-value">Low</div><div class="stat-label">Fees</div></div>
-    </div>
-    <label>From Token</label>
-    <select id="tokenIn" onchange="updateSwapRate()">
-      <option value="USDC">USDC</option>
-      <option value="EURC">EURC</option>
-    </select>
-    <div class="chain-swap-icon" onclick="swapTokens()">⇅</div>
-    <label>To Token</label>
-    <select id="tokenOut" onchange="updateSwapRate()">
-      <option value="EURC">EURC</option>
-      <option value="USDC">USDC</option>
-    </select>
-    <div class="token-available">Available: <span id="swapAvailable">0.00</span></div>
-    <label>Amount</label>
-    <input id="swapAmount" type="number" placeholder="0.01" oninput="updateSwapRate()" />
-    <div class="pct-row">
-      <div class="pct-btn" onclick="setPctSwap(25)">25%</div>
-      <div class="pct-btn" onclick="setPctSwap(50)">50%</div>
-      <div class="pct-btn" onclick="setPctSwap(75)">75%</div>
-      <div class="pct-btn" onclick="setPctSwap(100)">Max</div>
-    </div>
-    <div class="token-available">You receive: <span id="swapReceiveSpan">0.00</span></div>
-    <input id="swapReceive" placeholder="0.00" readonly style="color:#a855f7" />
-    <button class="btn btn-green" onclick="doSwap()">Swap Tokens →</button>
-  </div>
-  <div class="card" id="tab-tipjar">
-    <div class="card-title">🫙 Tip Jar</div>
-    <div class="stats-row">
-      <div class="stat-box"><div class="stat-value" id="jarBalance">0</div><div class="stat-label">USDC Balance</div></div>
-      <div class="stat-box"><div class="stat-value" id="jarTips">0</div><div class="stat-label">Total Tips</div></div>
-    </div>
-    <label>Tip Amount (USDC)</label>
-    <div class="token-available">Available: <span id="tipAvailable">0.00</span> USDC</div>
-    <input id="tipAmount" type="number" placeholder="1.00" />
-    <div class="pct-row">
-      <div class="pct-btn" onclick="setPct('tipAmount',25)">25%</div>
-      <div class="pct-btn" onclick="setPct('tipAmount',50)">50%</div>
-      <div class="pct-btn" onclick="setPct('tipAmount',75)">75%</div>
-      <div class="pct-btn" onclick="setPct('tipAmount',100)">Max</div>
-    </div>
-    <label>Message</label>
-    <input id="tipMessage" placeholder="Great work! 🚀" />
-    <button class="btn btn-purple" onclick="sendTip()">Send Tip 💸</button>
-    <button class="btn btn-outline" onclick="checkBalance()">Check Balance</button>
-    <button class="btn btn-green" onclick="withdraw()">Withdraw (Owner)</button>
-  </div>
-  <!-- Wallet Select Modal -->
+    <div class="status-box" id="status">Connect your wallet to get started.</div>
+  </main>
   <div class="wallet-modal-overlay" id="walletModalOverlay">
     <div class="wallet-modal">
-      <div class="wallet-modal-title">Connect Wallet</div>
-      <div class="wallet-option" onclick="connectWithMetaMask()">
-        <div class="wallet-icon" style="background:#f6851b">🦊</div>
-        <div>
-          <div class="wallet-name">MetaMask</div>
-          <div class="wallet-desc">Connect using browser extension</div>
-        </div>
-      </div>
-      <div class="wallet-option" onclick="connectWithInjected()">
-        <div class="wallet-icon" style="background:#3b82f6">💼</div>
-        <div>
-          <div class="wallet-name">Browser Wallet</div>
-          <div class="wallet-desc">Any injected wallet</div>
-        </div>
-      </div>
-      <div class="wallet-option" onclick="connectWithTrustWallet()">
-        <div class="wallet-icon" style="background:#3375bb">🔷</div>
-        <div>
-          <div class="wallet-name">Trust Wallet</div>
-          <div class="wallet-desc">Connect using Trust Wallet</div>
-        </div>
-      </div>
+      <div class="wallet-modal-handle"></div>
+      <div class="wallet-modal-title">Connect a Wallet</div>
+      <div class="wallet-modal-sub">Choose your preferred wallet to continue</div>
+      <div class="wallet-option" onclick="connectWithBrowser()"><div class="wallet-option-icon" style="background:#1a1a2e">💼</div><div><div class="wallet-option-name">Browser Wallet</div><div class="wallet-option-desc">Detected wallet extension</div></div><div class="wallet-option-arrow">›</div></div>
+      <div class="wallet-option" onclick="connectWithMetaMask()"><div class="wallet-option-icon" style="background:#f6851b22">🦊</div><div><div class="wallet-option-name">MetaMask</div><div class="wallet-option-desc">Connect using MetaMask</div></div><div class="wallet-option-arrow">›</div></div>
+      <div class="wallet-option" onclick="connectWithWalletConnect()"><div class="wallet-option-icon" style="background:#3b99fc22">🔗</div><div><div class="wallet-option-name">WalletConnect</div><div class="wallet-option-desc">Scan with any mobile wallet</div></div><div class="wallet-option-arrow">›</div></div>
       <button class="wallet-close" onclick="closeWalletModal()">Cancel</button>
     </div>
   </div>
-
-  <!-- Confirmation Modal -->
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal">
+      <div class="modal-handle"></div>
       <div class="modal-title" id="modalTitle">Confirm Transaction</div>
       <div id="modalRows"></div>
-      <div class="modal-buttons">
-        <button class="modal-cancel" onclick="closeModal()">Cancel</button>
-        <button class="modal-confirm" id="modalConfirmBtn" onclick="executeConfirmed()">Confirm</button>
-      </div>
+      <div class="modal-buttons"><button class="modal-cancel" onclick="closeModal()">Cancel</button><button class="modal-confirm" id="modalConfirmBtn" onclick="executeConfirmed()">Confirm</button></div>
     </div>
   </div>
-
-  <div class="status-box" id="status">Connect your wallet to get started.</div>
   <script>
-    const TIPJAR_ADDRESS = "0x489E68cD48156f82BD9d24bD307c678fcCA27d0E";
-    const USDC_ADDRESS = "0x3600000000000000000000000000000000000000";
-    const EURC_ADDRESS = "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a";
-    const SEPOLIA_RPC = "https://ethereum-sepolia-rpc.publicnode.com";
-    const SEPOLIA_USDC = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
-    const ARC_RPC = "https://rpc.testnet.arc.network";
-    const ARC_CHAIN_ID = 5042002;
-    const BACKEND = "https://dashdex-backend-production.up.railway.app";
-    const TIPJAR_ABI = [
-      "function tip(uint256 amount, string memory message) public",
-      "function getBalance() public view returns (uint256)",
-      "function withdraw() public",
-      "function totalTipsReceived() public view returns (uint256)"
-    ];
-    const TOKEN_ABI = [
-      "function approve(address spender, uint256 amount) public returns (bool)",
-      "function balanceOf(address account) public view returns (uint256)",
-      "function transfer(address to, uint256 amount) public returns (bool)"
-    ];
-    let provider, signer, tipJar, usdcContract, eurcContract;
-    let usdcBalance = 0, eurcBalance = 0, sepoliaBalance = 0;
+    const TIPJAR_ADDRESS="0x489E68cD48156f82BD9d24bD307c678fcCA27d0E";
+    const USDC_ADDRESS="0x3600000000000000000000000000000000000000";
+    const EURC_ADDRESS="0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a";
+    const SEPOLIA_RPC="https://ethereum-sepolia-rpc.publicnode.com";
+    const SEPOLIA_USDC="0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
+    const ARC_RPC="https://rpc.testnet.arc.network";
+    const ARC_CHAIN_ID=5042002;
+    const BACKEND="https://dashdex-backend-production.up.railway.app";
+    const TIPJAR_ABI=["function tip(uint256 amount, string memory message) public","function getBalance() public view returns (uint256)","function withdraw() public","function totalTipsReceived() public view returns (uint256)"];
+    const TOKEN_ABI=["function approve(address spender, uint256 amount) public returns (bool)","function balanceOf(address account) public view returns (uint256)","function transfer(address to, uint256 amount) public returns (bool)"];
+    let provider,signer,tipJar,usdcContract,eurcContract;
+    let usdcBalance=0,eurcBalance=0,sepoliaBalance=0,pendingAction=null;
 
-    function showWalletModal() {
-      if (window.openWeb3Modal) {
-        window.openWeb3Modal({ view: 'Connect' });
-      } else {
-        document.getElementById("walletModalOverlay").classList.add("active");
-      }
+    function showWalletModal(){if(window.openWeb3Modal){window.openWeb3Modal();}else{document.getElementById("walletModalOverlay").classList.add("active");}}
+    function closeWalletModal(){document.getElementById("walletModalOverlay").classList.remove("active");}
+    async function connectWithBrowser(){closeWalletModal();await connectWallet();}
+    async function connectWithMetaMask(){closeWalletModal();await connectWallet();}
+    async function connectWithWalletConnect(){closeWalletModal();if(window.openWeb3Modal)window.openWeb3Modal();else await connectWallet();}
+
+    async function toggleWallet(){
+      if(signer){
+        signer=null;provider=null;
+        document.getElementById("balanceBar").classList.remove("visible");
+        const btn=document.getElementById("connectBtn");
+        btn.innerText="Connect";btn.className="btn-connect";
+        setStatus("Wallet disconnected.");
+      }else{showWalletModal();}
     }
 
-    function closeWalletModal() {
-      document.getElementById("walletModalOverlay").classList.remove("active");
-    }
-
-    async function connectWithMetaMask() {
-      closeWalletModal();
-      await connectWallet();
-    }
-
-    async function connectWithInjected() {
-      closeWalletModal();
-      await connectWallet();
-    }
-
-    async function connectWithTrustWallet() {
-      closeWalletModal();
-      await connectWallet();
-    }
-
-    async function toggleWallet() {
-      if (signer) {
-        signer = null;
-        provider = null;
-        document.getElementById("walletAddress").innerText = "Not connected";
-        document.getElementById("walletBalance").innerText = "";
-        document.getElementById("networkBadge").innerText = "Arc Testnet";
-        document.getElementById("balanceRow").style.display = "none";
-        document.getElementById("connectBtn").innerText = "Connect";
-        document.getElementById("connectBtn").style.background = "linear-gradient(135deg, #6366f1, #a855f7)";
-        setStatus("Wallet disconnected.", "");
-      } else {
-        await connectWallet();
-      }
-    }
-
-    async function connectWallet() {
-      try {
-        let web3Provider;
-        if (window.ethereum) {
-          web3Provider = window.ethereum;
-        } else {
-          const WalletConnectProvider = window.WalletConnectProvider.default;
-          const wcProvider = new WalletConnectProvider({
-            rpc: { 5042002: "https://rpc.testnet.arc.network" },
-            chainId: 5042002,
-            qrcodeModalOptions: { mobileLinks: ["metamask", "trust", "rainbow", "argent"] }
-          });
-          await wcProvider.enable();
-          web3Provider = wcProvider;
+    async function connectWallet(){
+      try{
+        if(!window.ethereum){setStatus("No wallet detected. Open in MetaMask browser.","error");return;}
+        provider=new ethers.providers.Web3Provider(window.ethereum);
+        await provider.send("eth_requestAccounts",[]);
+        const network=await provider.getNetwork();
+        if(network.chainId!==ARC_CHAIN_ID){
+          setStatus("Switching to Arc Testnet...","loading");
+          try{await window.ethereum.request({method:"wallet_switchEthereumChain",params:[{chainId:"0x"+ARC_CHAIN_ID.toString(16)}]});}
+          catch(e){await window.ethereum.request({method:"wallet_addEthereumChain",params:[{chainId:"0x"+ARC_CHAIN_ID.toString(16),chainName:"Arc Testnet",nativeCurrency:{name:"USDC",symbol:"USDC",decimals:6},rpcUrls:[ARC_RPC],blockExplorerUrls:["https://testnet.arcscan.app"]}]});}
+          provider=new ethers.providers.Web3Provider(window.ethereum);
         }
-        provider = new ethers.providers.Web3Provider(web3Provider);
-        await provider.send("eth_requestAccounts", []);
-        const network = await provider.getNetwork();
-        if (network.chainId !== ARC_CHAIN_ID) {
-          setStatus("Switching to Arc Testnet...", "loading");
-          try {
-            await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: "0x" + ARC_CHAIN_ID.toString(16) }] });
-          } catch (e) {
-            await window.ethereum.request({ method: "wallet_addEthereumChain", params: [{ chainId: "0x" + ARC_CHAIN_ID.toString(16), chainName: "Arc Testnet", nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 6 }, rpcUrls: [ARC_RPC], blockExplorerUrls: ["https://testnet.arcscan.app"] }] });
-          }
-          provider = new ethers.providers.Web3Provider(window.ethereum);
-        }
-        signer = provider.getSigner();
-        tipJar = new ethers.Contract(TIPJAR_ADDRESS, TIPJAR_ABI, signer);
-        usdcContract = new ethers.Contract(USDC_ADDRESS, TOKEN_ABI, signer);
-        eurcContract = new ethers.Contract(EURC_ADDRESS, TOKEN_ABI, signer);
-        const address = await signer.getAddress();
-        document.getElementById("walletAddress").innerText = address.slice(0,6) + "..." + address.slice(-4);
-        document.getElementById("networkBadge").innerText = "✅ Arc Testnet";
-        document.getElementById("connectBtn").innerText = "Disconnect";
-        document.getElementById("connectBtn").style.background = "linear-gradient(135deg, #dc2626, #ef4444)";
-        setStatus("✅ Wallet connected!", "success");
-        await fetchBalances();
-        fetchSepoliaBalance();
-        refreshJarStats();
-      } catch(e) { setStatus("❌ " + e.message, "error"); }
+        signer=provider.getSigner();
+        tipJar=new ethers.Contract(TIPJAR_ADDRESS,TIPJAR_ABI,signer);
+        usdcContract=new ethers.Contract(USDC_ADDRESS,TOKEN_ABI,signer);
+        eurcContract=new ethers.Contract(EURC_ADDRESS,TOKEN_ABI,signer);
+        const address=await signer.getAddress();
+        const btn=document.getElementById("connectBtn");
+        btn.innerText=address.slice(0,6)+"..."+address.slice(-4);
+        btn.className="btn-connect connected";
+        setStatus("Connected: "+address,"success");
+        await fetchBalances();fetchSepoliaBalance();refreshJarStats();
+      }catch(e){setStatus(e.message,"error");}
     }
 
-    async function fetchBalances() {
-      try {
-        const address = await signer.getAddress();
-        const usdcRaw = await usdcContract.balanceOf(address);
-        usdcBalance = parseFloat(ethers.utils.formatUnits(usdcRaw, 6));
-        try {
-          const eurcRaw = await eurcContract.balanceOf(address);
-          eurcBalance = parseFloat(ethers.utils.formatUnits(eurcRaw, 6));
-        } catch(e) { eurcBalance = 0; }
-        const eurRate = 1.08;
-        const eurcUsd = (eurcBalance * eurRate).toFixed(2);
-        const total = (usdcBalance + (eurcBalance * eurRate)).toFixed(2);
-        document.getElementById("usdcBal").innerText = usdcBalance.toFixed(2);
-        document.getElementById("usdcUsd").innerText = "=$" + usdcBalance.toFixed(2);
-        document.getElementById("eurcBal").innerText = eurcBalance.toFixed(2);
-        document.getElementById("eurcUsd").innerText = "=$" + eurcUsd;
-        document.getElementById("totalBal").innerText = "$" + total;
-        document.getElementById("balanceRow").style.display = "flex";
-        document.getElementById("sendAvailable").innerText = usdcBalance.toFixed(2);
-        document.getElementById("tipAvailable").innerText = usdcBalance.toFixed(2);
-        document.getElementById("arcBridgeBalance").innerText = usdcBalance.toFixed(2);
+    async function fetchBalances(){
+      try{
+        const address=await signer.getAddress();
+        const usdcRaw=await usdcContract.balanceOf(address);
+        usdcBalance=parseFloat(ethers.utils.formatUnits(usdcRaw,6));
+        try{const eurcRaw=await eurcContract.balanceOf(address);eurcBalance=parseFloat(ethers.utils.formatUnits(eurcRaw,6));}catch(e){eurcBalance=0;}
+        const eurRate=1.08;
+        document.getElementById("usdcBal").innerText=usdcBalance.toFixed(2);
+        document.getElementById("usdcUsd").innerText="≈ $"+usdcBalance.toFixed(2);
+        document.getElementById("eurcBal").innerText=eurcBalance.toFixed(2);
+        document.getElementById("eurcUsd").innerText="≈ $"+(eurcBalance*eurRate).toFixed(2);
+        document.getElementById("totalBal").innerText="$"+(usdcBalance+(eurcBalance*eurRate)).toFixed(2);
+        document.getElementById("balanceBar").classList.add("visible");
+        document.getElementById("sendAvailable").innerText=usdcBalance.toFixed(2);
+        document.getElementById("tipAvailable").innerText=usdcBalance.toFixed(2);
+        document.getElementById("arcBridgeBalance").innerText=usdcBalance.toFixed(2);
+        updateBridgeAvailable();updateSwapAvailable();
+      }catch(e){setStatus("Balance error: "+e.message,"error");}
+    }
+
+    async function fetchSepoliaBalance(){
+      try{
+        const sepProvider=new ethers.providers.JsonRpcProvider(SEPOLIA_RPC);
+        const address=await signer.getAddress();
+        const sepUsdc=new ethers.Contract(SEPOLIA_USDC,["function balanceOf(address) view returns (uint256)"],sepProvider);
+        const bal=await sepUsdc.balanceOf(address);
+        sepoliaBalance=parseFloat(ethers.utils.formatUnits(bal,6));
+        document.getElementById("sepoliaBalance").innerText=sepoliaBalance.toFixed(2);
         updateBridgeAvailable();
-        updateSwapAvailable();
-      } catch(e) { setStatus("❌ Balance error: " + e.message, "error"); }
+      }catch(e){}
     }
 
-    async function fetchSepoliaBalance() {
-      try {
-        const sepProvider = new ethers.providers.JsonRpcProvider(SEPOLIA_RPC);
-        const address = await signer.getAddress();
-        const sepUsdc = new ethers.Contract(SEPOLIA_USDC, ["function balanceOf(address) view returns (uint256)"], sepProvider);
-        const bal = await sepUsdc.balanceOf(address);
-        sepoliaBalance = parseFloat(ethers.utils.formatUnits(bal, 6));
-        document.getElementById("sepoliaBalance").innerText = sepoliaBalance.toFixed(2);
-        updateBridgeAvailable();
-      } catch(e) { console.log("Sepolia error:", e.message); }
-    }
+    function updateBridgeAvailable(){const fromChain=document.getElementById("bridgeFrom").value;const bal=fromChain==="Ethereum_Sepolia"?sepoliaBalance:usdcBalance;document.getElementById("bridgeAvailable").innerText=bal.toFixed(2)+" USDC";}
+    function updateSwapAvailable(){const tokenIn=document.getElementById("tokenIn").value;const bal=tokenIn==="USDC"?usdcBalance:eurcBalance;document.getElementById("swapAvailable").innerText=bal.toFixed(2)+" "+tokenIn;}
+    function setPct(inputId,pct){document.getElementById(inputId).value=((usdcBalance*pct)/100).toFixed(6);}
+    function setPctBridge(pct){const fromChain=document.getElementById("bridgeFrom").value;const bal=fromChain==="Ethereum_Sepolia"?sepoliaBalance:usdcBalance;document.getElementById("bridgeAmount").value=((bal*pct)/100).toFixed(6);}
+    function setPctSwap(pct){const tokenIn=document.getElementById("tokenIn").value;const bal=tokenIn==="USDC"?usdcBalance:eurcBalance;document.getElementById("swapAmount").value=((bal*pct)/100).toFixed(6);updateSwapRate();}
 
-    function updateBridgeAvailable() {
-      const fromChain = document.getElementById("bridgeFrom").value;
-      const bal = fromChain === "Ethereum_Sepolia" ? sepoliaBalance : usdcBalance;
-      document.getElementById("bridgeAvailable").innerText = bal.toFixed(2);
-    }
+    function switchTab(tab,el){document.querySelectorAll(".card").forEach(c=>c.classList.remove("active"));document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));document.getElementById("tab-"+tab).classList.add("active");el.classList.add("active");updateSwapAvailable();}
+    function swapChains(){const from=document.getElementById("bridgeFrom");const to=document.getElementById("bridgeTo");const temp=from.value;from.value=to.value;to.value=temp;updateBridgeAvailable();}
+    function swapTokens(){const tokenIn=document.getElementById("tokenIn");const tokenOut=document.getElementById("tokenOut");const temp=tokenIn.value;tokenIn.value=tokenOut.value;tokenOut.value=temp;updateSwapRate();}
+    function updateSwapRate(){const amount=parseFloat(document.getElementById("swapAmount").value)||0;const tokenIn=document.getElementById("tokenIn").value;const rate=tokenIn==="USDC"?0.9268:1.08;document.getElementById("swapReceive").value=amount>0?(amount*rate).toFixed(4):"";document.getElementById("swapRate").innerText="1:"+rate.toFixed(4);updateSwapAvailable();}
 
-    function updateSwapAvailable() {
-      const tokenIn = document.getElementById("tokenIn").value;
-      const bal = tokenIn === "USDC" ? usdcBalance : eurcBalance;
-      document.getElementById("swapAvailable").innerText = bal.toFixed(2) + " " + tokenIn;
-    }
-
-    function setPct(inputId, pct) {
-      document.getElementById(inputId).value = ((usdcBalance * pct) / 100).toFixed(6);
-    }
-
-    function setPctBridge(pct) {
-      const fromChain = document.getElementById("bridgeFrom").value;
-      const bal = fromChain === "Ethereum_Sepolia" ? sepoliaBalance : usdcBalance;
-      document.getElementById("bridgeAmount").value = ((bal * pct) / 100).toFixed(6);
-    }
-
-    function setPctSwap(pct) {
-      const tokenIn = document.getElementById("tokenIn").value;
-      const bal = tokenIn === "USDC" ? usdcBalance : eurcBalance;
-      document.getElementById("swapAmount").value = ((bal * pct) / 100).toFixed(6);
-      updateSwapRate();
-    }
-
-    function switchTab(tab, el) {
-      document.querySelectorAll(".card").forEach(c => c.classList.remove("active"));
-      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-      document.getElementById("tab-" + tab).classList.add("active");
-      el.classList.add("active");
-      updateSwapAvailable();
-    }
-
-    function swapTokens() {
-      const tokenIn = document.getElementById("tokenIn");
-      const tokenOut = document.getElementById("tokenOut");
-      const temp = tokenIn.value;
-      tokenIn.value = tokenOut.value;
-      tokenOut.value = temp;
-      updateSwapRate();
-    }
-
-    function swapChains() {
-      const from = document.getElementById("bridgeFrom");
-      const to = document.getElementById("bridgeTo");
-      const temp = from.value;
-      from.value = to.value;
-      to.value = temp;
-      updateBridgeAvailable();
-    }
-
-    function updateSwapRate() {
-      const amount = parseFloat(document.getElementById("swapAmount").value) || 0;
-      const tokenIn = document.getElementById("tokenIn").value;
-      const rate = tokenIn === "USDC" ? 0.9268 : 1.08;
-      document.getElementById("swapReceive").value = (amount * rate).toFixed(4);
-      document.getElementById("swapRate").innerText = rate.toFixed(4);
-      updateSwapAvailable();
-    }
-
-    async function doSend() {
-      try {
-        if (!signer) { setStatus("Connect wallet first!", "error"); return; }
-        const to = document.getElementById("sendTo").value;
-        const amount = document.getElementById("sendAmount").value;
-        if (!to || !amount) { setStatus("Fill in all fields!", "error"); return; }
-        setStatus("Sending " + amount + " USDC...", "loading");
-        const parsed = ethers.utils.parseUnits(amount, 6);
-        const tx = await usdcContract.transfer(to, parsed);
-        await tx.wait();
-        setStatus("✅ Sent " + amount + " USDC! TX: " + tx.hash, "success");
-        fetchBalances();
-      } catch(e) { setStatus("❌ " + e.message, "error"); }
-    }
-
-    async function doBridge() {
-      const fromChain = document.getElementById("bridgeFrom").value;
-      const toChain = document.getElementById("bridgeTo").value;
-      const amount = document.getElementById("bridgeAmount").value;
-      if (!amount) { setStatus("Enter an amount!", "error"); return; }
-      const fromLabel = fromChain === "Ethereum_Sepolia" ? "Ethereum Sepolia" : "Arc Testnet";
-      const toLabel = toChain === "Arc_Testnet" ? "Arc Testnet" : "Ethereum Sepolia";
-      showModal("🌉 Confirm Bridge", [
-        ["Amount", amount + " USDC"],
-        ["From", fromLabel],
-        ["To", toLabel],
-        ["Protocol", "CCTP"],
-        ["Time", "~20-60 seconds"]
-      ], "blue", async function() {
-        try {
-          setStatus("🌉 Bridging " + amount + " USDC... (takes 20-60 seconds)", "loading");
-          const controller = new AbortController();
-          const timeout = setTimeout(() => controller.abort(), 120000);
-          const res = await fetch(BACKEND + "/bridge", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ fromChain, toChain, amount }),
-            signal: controller.signal
-          });
-          clearTimeout(timeout);
-          const data = await res.json();
-          if (data.success) { setStatus("✅ Bridge successful!", "success"); fetchBalances(); fetchSepoliaBalance(); }
-          else { setStatus("❌ " + data.error, "error"); }
-        } catch(e) {
-          if (e.name === "AbortError") { setStatus("⏱️ Bridge taking longer than usual. Check testnet.arcscan.app for your TX.", "loading"); }
-          else { setStatus("❌ " + e.message, "error"); }
-        }
-      });
-    }
-
-    async function doSwap() {
-      const tokenIn = document.getElementById("tokenIn").value;
-      const tokenOut = document.getElementById("tokenOut").value;
-      const amountIn = document.getElementById("swapAmount").value;
-      if (!amountIn) { setStatus("Enter an amount!", "error"); return; }
-      const rate = tokenIn === "USDC" ? 0.9268 : 1.08;
-      const estimated = (parseFloat(amountIn) * rate).toFixed(4);
-      showModal("🔄 Confirm Swap", [
-        ["From", amountIn + " " + tokenIn],
-        ["To (estimated)", estimated + " " + tokenOut],
-        ["Fee", "~0.000002 USDC"],
-        ["Network", "Arc Testnet"]
-      ], "green", async function() {
-        try {
-          setStatus("🔄 Swapping " + amountIn + " " + tokenIn + "...", "loading");
-          const res = await fetch(BACKEND + "/swap", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ tokenIn, tokenOut, amountIn })
-          });
-          const data = await res.json();
-          if (data.success) { setStatus("✅ Swapped! Got " + data.amountOut + " " + tokenOut, "success"); fetchBalances(); }
-          else { setStatus("❌ " + data.error, "error"); }
-        } catch(e) { setStatus("❌ " + e.message, "error"); }
-      });
-    }
-
-    async function sendTip() {
-      try {
-        if (!signer) { setStatus("Connect wallet first!", "error"); return; }
-        const amount = document.getElementById("tipAmount").value;
-        const message = document.getElementById("tipMessage").value;
-        if (!amount) { setStatus("Enter a tip amount!", "error"); return; }
-        const parsed = ethers.utils.parseUnits(amount, 6);
-        setStatus("Step 1/2: Approving USDC...", "loading");
-        const approveTx = await usdcContract.approve(TIPJAR_ADDRESS, parsed);
-        await approveTx.wait();
-        setStatus("Step 2/2: Sending tip...", "loading");
-        const tx = await tipJar.tip(parsed, message);
-        await tx.wait();
-        setStatus("✅ Tip of " + amount + " USDC sent! Message: " + message, "success");
-        fetchBalances();
-        refreshJarStats();
-      } catch(e) { setStatus("❌ " + e.message, "error"); }
-    }
-
-    async function checkBalance() {
-      try {
-        if (!signer) { setStatus("Connect wallet first!", "error"); return; }
-        const bal = await tipJar.getBalance();
-        setStatus("🫙 Jar balance: " + ethers.utils.formatUnits(bal, 6) + " USDC", "success");
-        document.getElementById("jarBalance").innerText = ethers.utils.formatUnits(bal, 6);
-      } catch(e) { setStatus("❌ " + e.message, "error"); }
-    }
-
-    async function withdraw() {
-      try {
-        if (!signer) { setStatus("Connect wallet first!", "error"); return; }
-        setStatus("Withdrawing...", "loading");
-        const tx = await tipJar.withdraw();
-        await tx.wait();
-        setStatus("✅ Withdrawn successfully!", "success");
-        fetchBalances();
-        refreshJarStats();
-      } catch(e) { setStatus("❌ " + e.message, "error"); }
-    }
-
-    async function refreshJarStats() {
-      try {
-        const bal = await tipJar.getBalance();
-        const total = await tipJar.totalTipsReceived();
-        document.getElementById("jarBalance").innerText = ethers.utils.formatUnits(bal, 6);
-        document.getElementById("jarTips").innerText = ethers.utils.formatUnits(total, 6);
-      } catch(e) {}
-    }
-
-    let pendingAction = null;
-
-    function showModal(title, rows, confirmClass, action) {
-      document.getElementById("modalTitle").innerText = title;
-      const rowsHtml = rows.map(r => 
-        '<div class="modal-row"><span class="modal-label">' + r[0] + '</span><span class="modal-value">' + r[1] + '</span></div>'
-      ).join('');
-      document.getElementById("modalRows").innerHTML = rowsHtml;
-      document.getElementById("modalConfirmBtn").className = "modal-confirm " + (confirmClass || "");
+    function showModal(title,rows,confirmClass,action){
+      document.getElementById("modalTitle").innerText=title;
+      document.getElementById("modalRows").innerHTML=rows.map(r=>'<div class="modal-row"><span class="modal-row-label">'+r[0]+'</span><span class="modal-row-value">'+r[1]+'</span></div>').join('');
+      document.getElementById("modalConfirmBtn").className="modal-confirm "+(confirmClass||"");
       document.getElementById("modalOverlay").classList.add("active");
-      pendingAction = action;
+      pendingAction=action;
+    }
+    function closeModal(){document.getElementById("modalOverlay").classList.remove("active");pendingAction=null;}
+    async function executeConfirmed(){const action=pendingAction;closeModal();if(action)await action();}
+
+    async function doSend(){
+      try{
+        if(!signer){setStatus("Connect your wallet first.","error");return;}
+        const to=document.getElementById("sendTo").value;
+        const amount=document.getElementById("sendAmount").value;
+        if(!to||!amount){setStatus("Please fill in all fields.","error");return;}
+        setStatus("Sending "+amount+" USDC...","loading");
+        const parsed=ethers.utils.parseUnits(amount,6);
+        const tx=await usdcContract.transfer(to,parsed);
+        await tx.wait();
+        setStatus("Sent "+amount+" USDC. TX: "+tx.hash.slice(0,10)+"...","success");
+        fetchBalances();
+      }catch(e){setStatus(e.message,"error");}
     }
 
-    function closeModal() {
-      document.getElementById("modalOverlay").classList.remove("active");
-      pendingAction = null;
+    async function doBridge(){
+      const fromChain=document.getElementById("bridgeFrom").value;
+      const toChain=document.getElementById("bridgeTo").value;
+      const amount=document.getElementById("bridgeAmount").value;
+      if(!amount){setStatus("Enter an amount.","error");return;}
+      const fromLabel=fromChain==="Ethereum_Sepolia"?"Ethereum Sepolia":"Arc Testnet";
+      const toLabel=toChain==="Arc_Testnet"?"Arc Testnet":"Ethereum Sepolia";
+      showModal("Confirm Bridge",[["Amount",amount+" USDC"],["From",fromLabel],["To",toLabel],["Protocol","CCTP"],["Est. Time","20–60 seconds"]],"blue",async function(){
+        try{
+          setStatus("Bridging "+amount+" USDC — this takes 20–60 seconds...","loading");
+          const controller=new AbortController();
+          const timeout=setTimeout(()=>controller.abort(),120000);
+          const res=await fetch(BACKEND+"/bridge",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({fromChain,toChain,amount}),signal:controller.signal});
+          clearTimeout(timeout);
+          const data=await res.json();
+          if(data.success){setStatus("Bridge complete.","success");fetchBalances();fetchSepoliaBalance();}
+          else{setStatus(data.error,"error");}
+        }catch(e){
+          if(e.name==="AbortError"){setStatus("Bridge is taking longer than usual. Check testnet.arcscan.app for your transaction.","loading");}
+          else{setStatus(e.message,"error");}
+        }
+      });
     }
 
-    async function executeConfirmed() {
-      const action = pendingAction;
-      closeModal();
-      if (action) await action();
+    async function doSwap(){
+      const tokenIn=document.getElementById("tokenIn").value;
+      const tokenOut=document.getElementById("tokenOut").value;
+      const amountIn=document.getElementById("swapAmount").value;
+      if(!amountIn){setStatus("Enter an amount.","error");return;}
+      const rate=tokenIn==="USDC"?0.9268:1.08;
+      const estimated=(parseFloat(amountIn)*rate).toFixed(4);
+      showModal("Confirm Swap",[["You Pay",amountIn+" "+tokenIn],["You Receive (est.)",estimated+" "+tokenOut],["Rate","1 "+tokenIn+" = "+rate+" "+tokenOut],["Fee","~0.000002 USDC"],["Network","Arc Testnet"]],"green",async function(){
+        try{
+          setStatus("Swapping "+amountIn+" "+tokenIn+"...","loading");
+          const res=await fetch(BACKEND+"/swap",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({tokenIn,tokenOut,amountIn})});
+          const data=await res.json();
+          if(data.success){setStatus("Swapped "+amountIn+" "+tokenIn+" for "+data.amountOut+" "+tokenOut+".","success");fetchBalances();}
+          else{setStatus(data.error,"error");}
+        }catch(e){setStatus(e.message,"error");}
+      });
     }
 
-    function setStatus(msg, type) {
-      const el = document.getElementById("status");
-      el.innerText = msg;
-      el.className = "status-box " + (type || "");
+    async function sendTip(){
+      try{
+        if(!signer){setStatus("Connect your wallet first.","error");return;}
+        const amount=document.getElementById("tipAmount").value;
+        const message=document.getElementById("tipMessage").value;
+        if(!amount){setStatus("Enter a tip amount.","error");return;}
+        const parsed=ethers.utils.parseUnits(amount,6);
+        setStatus("Approving USDC...","loading");
+        const approveTx=await usdcContract.approve(TIPJAR_ADDRESS,parsed);
+        await approveTx.wait();
+        setStatus("Sending tip...","loading");
+        const tx=await tipJar.tip(parsed,message);
+        await tx.wait();
+        setStatus("Tip of "+amount+" USDC sent."+(message?' "'+message+'"':""),"success");
+        fetchBalances();refreshJarStats();
+      }catch(e){setStatus(e.message,"error");}
     }
+
+    async function checkBalance(){
+      try{
+        if(!signer){setStatus("Connect your wallet first.","error");return;}
+        const bal=await tipJar.getBalance();
+        setStatus("Jar balance: "+ethers.utils.formatUnits(bal,6)+" USDC","success");
+        document.getElementById("jarBalance").innerText=ethers.utils.formatUnits(bal,6);
+      }catch(e){setStatus(e.message,"error");}
+    }
+
+    async function withdraw(){
+      try{
+        if(!signer){setStatus("Connect your wallet first.","error");return;}
+        setStatus("Withdrawing...","loading");
+        const tx=await tipJar.withdraw();
+        await tx.wait();
+        setStatus("Withdrawal complete.","success");
+        fetchBalances();refreshJarStats();
+      }catch(e){setStatus(e.message,"error");}
+    }
+
+    async function refreshJarStats(){
+      try{
+        const bal=await tipJar.getBalance();
+        const total=await tipJar.totalTipsReceived();
+        document.getElementById("jarBalance").innerText=ethers.utils.formatUnits(bal,6);
+        document.getElementById("jarTips").innerText=ethers.utils.formatUnits(total,6);
+      }catch(e){}
+    }
+
+    function setStatus(msg,type){const el=document.getElementById("status");el.innerText=msg;el.className="status-box"+(type?" "+type:"");}
   </script>
 </body>
 </html>
