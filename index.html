@@ -209,8 +209,8 @@
     let provider,signer,tipJarC,usdcC,eurcC;
     let usdcBal=0,eurcBal=0,sepBal=0,pending=null,busy=false;
 
-    function lock(){busy=true;document.querySelectorAll(".btn-primary,.modal-confirm").forEach(b=>{b.disabled=true;b.style.opacity="0.5";});}
-    function unlock(){busy=false;document.querySelectorAll(".btn-primary,.modal-confirm").forEach(b=>{b.disabled=false;b.style.opacity="1";});}
+    function lock(){busy=true;document.querySelectorAll(".btn-primary,.modal-confirm").forEach(b=>{b.disabled=true;b.style.opacity="0.5";});document.getElementById("modalOverlay").style.pointerEvents="none";}
+    function unlock(){busy=false;document.querySelectorAll(".btn-primary,.modal-confirm").forEach(b=>{b.disabled=false;b.style.opacity="1";});document.getElementById("modalOverlay").style.pointerEvents="auto";}
 
     function showWalletModal(){if(window.openWeb3Modal)window.openWeb3Modal();else document.getElementById("walletModalOverlay").classList.add("active");}
     function closeWalletModal(){document.getElementById("walletModalOverlay").classList.remove("active");}
