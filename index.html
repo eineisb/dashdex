@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dash.dex</title>
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js">
+    function updateSendToken(){
+      const t=document.getElementById("sendToken").value;
+      const b=t==="EURC"?eurcBal:usdcBal;
+      document.getElementById("sendAvailable").innerText=b.toFixed(2);
+      document.getElementById("sendTokenLabel").innerText=t;
+      document.getElementById("sendTokenDot").style.background=t==="EURC"?"#26a17b":"#2775ca";
+    }
     async function loadHistory(){
       const el=document.getElementById("historyList");
       if(!signer){el.innerHTML='<span>Connect wallet to see history.</span>';return;}
@@ -44,6 +51,13 @@
     const modal = createWeb3Modal({ wagmiConfig: config, projectId, chains, enableEIP6963: true, enableInjected: true, enableCoinbase: true });
     window.openWeb3Modal = () => modal.open({ view: "Connect" });
   
+    function updateSendToken(){
+      const t=document.getElementById("sendToken").value;
+      const b=t==="EURC"?eurcBal:usdcBal;
+      document.getElementById("sendAvailable").innerText=b.toFixed(2);
+      document.getElementById("sendTokenLabel").innerText=t;
+      document.getElementById("sendTokenDot").style.background=t==="EURC"?"#26a17b":"#2775ca";
+    }
     async function loadHistory(){
       const el=document.getElementById("historyList");
       if(!signer){el.innerHTML='<span>Connect wallet to see history.</span>';return;}
@@ -197,9 +211,9 @@
       <button class="tab" onclick="switchTab('history',this);loadHistory()">History</button>
     </div>
     <div class="card active" id="tab-send">
-      <div class="card-header"><div class="card-title">Send USDC</div><div class="card-badge badge-green">INSTANT</div></div>
+      <div class="card-header"><div class="card-title">Send</div><div class="card-badge badge-green">INSTANT</div></div>
       <div class="input-group"><div class="input-label">Recipient Address</div><input class="input-field" id="sendTo" placeholder="0x..." style="font-size:13px"/></div>
-      <div class="input-group" style="margin-top:6px"><div class="input-label">Amount<span class="input-available">Available: <span id="sendAvailable">0.00</span> USDC</span></div><div class="input-row"><input class="input-field" id="sendAmount" type="number" placeholder="0.00"/><div class="token-badge"><div class="token-dot" style="background:#2775ca"></div>USDC</div></div></div>
+      <div class="input-group" style="margin-top:6px"><div class="input-label">Amount<span class="input-available">Available: <span id="sendAvailable">0.00</span> <span id="sendTokenLabel">USDC</span></span></div><div class="input-row"><input class="input-field" id="sendAmount" type="number" placeholder="0.00"/><div class="token-badge"><div class="token-dot" id="sendTokenDot" style="background:#2775ca"></div><select class="token-select" id="sendToken" onchange="updateSendToken()"><option value="USDC">USDC</option><option value="EURC">EURC</option></select></div></div></div>
       <div class="pct-row"><div class="pct-btn" onclick="setPct('sendAmount',25)">25%</div><div class="pct-btn" onclick="setPct('sendAmount',50)">50%</div><div class="pct-btn" onclick="setPct('sendAmount',75)">75%</div><div class="pct-btn" onclick="setPct('sendAmount',100)">MAX</div></div>
       <button class="btn-primary" onclick="doSend()">Send</button>
     </div>
@@ -325,7 +339,7 @@
         document.getElementById("eurcUsd").innerText="$"+(eurcBal*r).toFixed(2);
         document.getElementById("totalBal").innerText="$"+(usdcBal+eurcBal*r).toFixed(2);
         document.getElementById("balanceBar").classList.add("visible");
-        document.getElementById("sendAvailable").innerText=usdcBal.toFixed(2);
+        const st=document.getElementById("sendToken");const sb=st&&st.value==="EURC"?eurcBal:usdcBal;document.getElementById("sendAvailable").innerText=sb.toFixed(2);
         document.getElementById("tipAvailable").innerText=usdcBal.toFixed(2);
         document.getElementById("arcBridgeBalance").innerText=usdcBal.toFixed(2);
         updateBridgeAvailable();updateSwapAvailable();
@@ -346,7 +360,7 @@
 
     function updateBridgeAvailable(){const f=document.getElementById("bridgeFrom").value;const b=f==="Ethereum_Sepolia"?sepBal:usdcBal;document.getElementById("bridgeAvailable").innerText=b.toFixed(2)+" USDC";}
     function updateSwapAvailable(){const t=document.getElementById("tokenIn").value;const b=t==="USDC"?usdcBal:eurcBal;document.getElementById("swapAvailable").innerText=b.toFixed(2)+" "+t;}
-    function setPct(id,p){document.getElementById(id).value=((usdcBal*p)/100).toFixed(6);}
+    function setPct(id,p){const b=id==='tipAmount'?usdcBal:(document.getElementById('sendToken')&&document.getElementById('sendToken').value==='EURC'?eurcBal:usdcBal);document.getElementById(id).value=((b*p)/100).toFixed(6);}
     function setPctBridge(p){const f=document.getElementById("bridgeFrom").value;const b=f==="Ethereum_Sepolia"?sepBal:usdcBal;document.getElementById("bridgeAmount").value=((b*p)/100).toFixed(6);}
     function setPctSwap(p){const t=document.getElementById("tokenIn").value;const b=t==="USDC"?usdcBal:eurcBal;document.getElementById("swapAmount").value=((b*p)/100).toFixed(6);updateSwapRate();}
     function switchTab(t,el){document.querySelectorAll(".card").forEach(c=>c.classList.remove("active"));document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));document.getElementById("tab-"+t).classList.add("active");el.classList.add("active");updateSwapAvailable();}
@@ -369,11 +383,13 @@
       try{
         if(!signer){setStatus("Connect wallet first.","error");return;}
         const to=document.getElementById("sendTo").value,amount=document.getElementById("sendAmount").value;
+        const token=document.getElementById("sendToken").value;
         if(!to||!amount){setStatus("Fill in all fields.","error");return;}
-        lock();setStatus("Sending "+amount+" USDC...","loading");
-        const tx=await usdcC.transfer(to,ethers.utils.parseUnits(amount,6));
+        lock();setStatus("Sending "+amount+" "+token+"...","loading");
+        const contract=token==="EURC"?eurcC:usdcC;
+        const tx=await contract.transfer(to,ethers.utils.parseUnits(amount,6));
         await tx.wait();
-        setStatus("Sent "+amount+" USDC. TX: "+tx.hash.slice(0,10)+"...","success");
+        setStatus("Sent "+amount+" "+token+". TX: "+tx.hash.slice(0,10)+"...","success");
         fetchBalances();
       }catch(e){setStatus(e.message,"error");}finally{unlock();}
     }
@@ -448,6 +464,13 @@
 
     function setStatus(msg,type){const el=document.getElementById("status");el.innerText=msg;el.className="status-box"+(type?" "+type:"");}
   
+    function updateSendToken(){
+      const t=document.getElementById("sendToken").value;
+      const b=t==="EURC"?eurcBal:usdcBal;
+      document.getElementById("sendAvailable").innerText=b.toFixed(2);
+      document.getElementById("sendTokenLabel").innerText=t;
+      document.getElementById("sendTokenDot").style.background=t==="EURC"?"#26a17b":"#2775ca";
+    }
     async function loadHistory(){
       const el=document.getElementById("historyList");
       if(!signer){el.innerHTML='<span>Connect wallet to see history.</span>';return;}
