@@ -330,7 +330,7 @@
         const addr=await signer.getAddress();
         setStatus("Sign the message in your wallet to continue...","loading");
         try{
-          const msg="Welcome to Dash.dex\nWallet: "+addr+"\nTime: "+new Date().toISOString();
+          const msg="Dash.dex wants you to sign in with your Ethereum account:\n"+addr+"\n\nSign in to Dash.dex — DEX on Arc Testnet.\n\nURI: https://eineisb.github.io/dashdex\nVersion: 1\nChain ID: 5042002\nNonce: "+Math.random().toString(36).slice(2)+"\nIssued At: "+new Date().toISOString();
           await signer.signMessage(msg);
         }catch(e){
           signer=null;
