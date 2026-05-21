@@ -4,11 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dash.dex</title>
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#4f6ef7">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Dash.dex">
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js">
     function updateSendToken(){
       const t=document.getElementById("sendToken").value;
@@ -503,23 +498,6 @@
             '</div>';
         }).join('');
       }catch(e){el.innerHTML='<span style="color:var(--red)">Failed to load history.</span>';}
-    }
-  </script>
-  <script>
-    if('serviceWorker' in navigator){
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/dashdex/sw.js');
-      });
-    }
-  </script>
-  <script>
-    if(window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone){
-      document.addEventListener('DOMContentLoaded', function(){
-        const bar = document.createElement('div');
-        bar.style.cssText = 'background:#f59e0b;color:#000;text-align:center;padding:10px;font-size:12px;font-weight:700;position:sticky;top:60px;z-index:99;';
-        bar.innerHTML = '⚠️ To connect wallet, open in Chrome browser. <a href="https://eineisb.github.io/dashdex" style="color:#000;text-decoration:underline;">Tap here</a>';
-        document.body.insertBefore(bar, document.body.children[1]);
-      });
     }
   </script>
 </body>
