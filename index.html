@@ -11,14 +11,14 @@
       el.innerHTML='<span style="color:var(--accent)">Loading...</span>';
       try{
         const addr=await signer.getAddress();
-        const res=await fetch('https://testnet.arcscan.app/api/v2/addresses/'+addr+'/transactions?limit=20');
+        const res=await fetch('https://testnet.arcscan.app/api?module=account&action=txlist&address='+addr+'&limit=20');
         const data=await res.json();
-        if(!data.items||data.items.length===0){el.innerHTML='<span>No transactions found.</span>';return;}
+        if(!data.result||data.result.length===0){el.innerHTML='<span>No transactions found.</span>';return;}
         el.style.display='block';
-        el.innerHTML=data.items.map(tx=>{
-          const date=new Date(tx.timestamp).toLocaleString();
+        el.innerHTML=data.result.map(tx=>{
+          const date=new Date(parseInt(tx.timeStamp)*1000).toLocaleString();
           const hash=tx.hash.slice(0,10)+'...';
-          const status=tx.status==='ok'?'<span style="color:var(--green)">✓</span>':'<span style="color:var(--red)">✗</span>';
+          const status=tx.txreceipt_status==='1'?'<span style="color:var(--green)">✓</span>':'<span style="color:var(--red)">✗</span>';
           const link='https://testnet.arcscan.app/tx/'+tx.hash;
           return '<div style="padding:10px 0;border-bottom:1px solid var(--border);font-size:12px;">'+
             '<div style="display:flex;justify-content:space-between;margin-bottom:4px;">'+
@@ -50,14 +50,14 @@
       el.innerHTML='<span style="color:var(--accent)">Loading...</span>';
       try{
         const addr=await signer.getAddress();
-        const res=await fetch('https://testnet.arcscan.app/api/v2/addresses/'+addr+'/transactions?limit=20');
+        const res=await fetch('https://testnet.arcscan.app/api?module=account&action=txlist&address='+addr+'&limit=20');
         const data=await res.json();
-        if(!data.items||data.items.length===0){el.innerHTML='<span>No transactions found.</span>';return;}
+        if(!data.result||data.result.length===0){el.innerHTML='<span>No transactions found.</span>';return;}
         el.style.display='block';
-        el.innerHTML=data.items.map(tx=>{
-          const date=new Date(tx.timestamp).toLocaleString();
+        el.innerHTML=data.result.map(tx=>{
+          const date=new Date(parseInt(tx.timeStamp)*1000).toLocaleString();
           const hash=tx.hash.slice(0,10)+'...';
-          const status=tx.status==='ok'?'<span style="color:var(--green)">✓</span>':'<span style="color:var(--red)">✗</span>';
+          const status=tx.txreceipt_status==='1'?'<span style="color:var(--green)">✓</span>':'<span style="color:var(--red)">✗</span>';
           const link='https://testnet.arcscan.app/tx/'+tx.hash;
           return '<div style="padding:10px 0;border-bottom:1px solid var(--border);font-size:12px;">'+
             '<div style="display:flex;justify-content:space-between;margin-bottom:4px;">'+
@@ -454,14 +454,14 @@
       el.innerHTML='<span style="color:var(--accent)">Loading...</span>';
       try{
         const addr=await signer.getAddress();
-        const res=await fetch('https://testnet.arcscan.app/api/v2/addresses/'+addr+'/transactions?limit=20');
+        const res=await fetch('https://testnet.arcscan.app/api?module=account&action=txlist&address='+addr+'&limit=20');
         const data=await res.json();
-        if(!data.items||data.items.length===0){el.innerHTML='<span>No transactions found.</span>';return;}
+        if(!data.result||data.result.length===0){el.innerHTML='<span>No transactions found.</span>';return;}
         el.style.display='block';
-        el.innerHTML=data.items.map(tx=>{
-          const date=new Date(tx.timestamp).toLocaleString();
+        el.innerHTML=data.result.map(tx=>{
+          const date=new Date(parseInt(tx.timeStamp)*1000).toLocaleString();
           const hash=tx.hash.slice(0,10)+'...';
-          const status=tx.status==='ok'?'<span style="color:var(--green)">✓</span>':'<span style="color:var(--red)">✗</span>';
+          const status=tx.txreceipt_status==='1'?'<span style="color:var(--green)">✓</span>':'<span style="color:var(--red)">✗</span>';
           const link='https://testnet.arcscan.app/tx/'+tx.hash;
           return '<div style="padding:10px 0;border-bottom:1px solid var(--border);font-size:12px;">'+
             '<div style="display:flex;justify-content:space-between;margin-bottom:4px;">'+
