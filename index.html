@@ -517,10 +517,10 @@
   
     async function fetchLivePrice(){
       try{
-        const res=await fetch('https://api.coinbase.com/v2/exchange-rates?currency=EUR');
+        const res=await fetch('https://open.er-api.com/v6/latest/EUR');
         const data=await res.json();
-        if(data.data&&data.data.rates&&data.data.rates.USD){
-          eurcRate=parseFloat(data.data.rates.USD);
+        if(data.result==='success'&&data.rates&&data.rates.USD){
+          eurcRate=parseFloat(data.rates.USD);
           updateSwapRate();
         }
       }catch(e){console.log('Price fetch failed:',e.message);}
