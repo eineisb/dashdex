@@ -517,10 +517,10 @@
   
     async function fetchLivePrice(){
       try{
-        const res=await fetch('https://api.coingecko.com/api/v3/simple/price?ids=euro-coin&vs_currencies=usd');
+        const res=await fetch('https://api.coinbase.com/v2/exchange-rates?currency=EUR');
         const data=await res.json();
-        if(data['euro-coin']&&data['euro-coin'].usd){
-          eurcRate=data['euro-coin'].usd;
+        if(data.data&&data.data.rates&&data.data.rates.USD){
+          eurcRate=parseFloat(data.data.rates.USD);
           updateSwapRate();
         }
       }catch(e){console.log('Price fetch failed:',e.message);}
