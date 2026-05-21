@@ -1,0 +1,17 @@
+{
+  "name": "Dash.dex",
+  "short_name": "Dash.dex",
+  "description": "DEX on Arc Testnet",
+  "start_url": "/dashdex/",
+  "display": "standalone",
+  "background_color": "#080810",
+  "theme_color": "#4f6ef7",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://avatars.githubusercontent.com/u/178712497?v=4",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}

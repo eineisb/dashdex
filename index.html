@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dash.dex</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#4f6ef7">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Dash.dex">
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js">
     function updateSendToken(){
       const t=document.getElementById("sendToken").value;
@@ -303,7 +308,16 @@
 
     async function connectWallet(){
       try{
-        if(!window.ethereum){setStatus("No wallet detected. Open in MetaMask browser.","error");return;}
+        if(!window.ethereum){
+        const url=encodeURIComponent("https://eineisb.github.io/dashdex");
+        const isPWA=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone;
+        if(isPWA){
+          window.location.href="https://metamask.app.link/dapp/eineisb.github.io/dashdex";
+        } else {
+          setStatus("No wallet detected. Open in MetaMask browser.","error");
+        }
+        return;
+      }
         provider=new ethers.providers.Web3Provider(window.ethereum);
         await provider.send("eth_requestAccounts",[]);
         const net=await provider.getNetwork();
@@ -498,6 +512,11 @@
             '</div>';
         }).join('');
       }catch(e){el.innerHTML='<span style="color:var(--red)">Failed to load history.</span>';}
+    }
+  </script>
+  <script>
+    if('serviceWorker' in navigator){
+      window.addEventListener('load',()=>navigator.serviceWorker.register('/dashdex/sw.js'));
     }
   </script>
 </body>
