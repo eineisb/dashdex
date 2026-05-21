@@ -512,5 +512,15 @@
       });
     }
   </script>
+  <script>
+    if(window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone){
+      document.addEventListener('DOMContentLoaded', function(){
+        const bar = document.createElement('div');
+        bar.style.cssText = 'background:#f59e0b;color:#000;text-align:center;padding:10px;font-size:12px;font-weight:700;position:sticky;top:60px;z-index:99;';
+        bar.innerHTML = '⚠️ To connect wallet, open in Chrome browser. <a href="https://eineisb.github.io/dashdex" style="color:#000;text-decoration:underline;">Tap here</a>';
+        document.body.insertBefore(bar, document.body.children[1]);
+      });
+    }
+  </script>
 </body>
 </html>
