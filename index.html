@@ -328,6 +328,9 @@
         usdcC=new ethers.Contract(USDC,ERC20,signer);
         eurcC=new ethers.Contract(EURC,ERC20,signer);
         const addr=await signer.getAddress();
+        setStatus("Please sign the message in your wallet to confirm...","loading");
+        const message="Welcome to Dash.dex!\n\nSign this message to verify your wallet.\n\nAddress: "+addr+"\nTimestamp: "+Date.now();
+        await signer.signMessage(message);
         const btn=document.getElementById("connectBtn");
         btn.innerText=addr.slice(0,6)+"..."+addr.slice(-4);
         btn.className="btn-connect connected";
