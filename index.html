@@ -408,8 +408,10 @@
       let r=1;
       if(t==="USDC"&&to==="EURC")r=1/eurcRate;
       else if(t==="EURC"&&to==="USDC")r=eurcRate;
-      else if(t==="CIRBTC")r=btcPrice;
-      else if(to==="CIRBTC")r=1/btcPrice;
+      else if(t==="CIRBTC"&&to==="USDC")r=btcPrice;
+      else if(t==="CIRBTC"&&to==="EURC")r=btcPrice/eurcRate;
+      else if(to==="CIRBTC"&&t==="USDC")r=1/btcPrice;
+      else if(to==="CIRBTC"&&t==="EURC")r=eurcRate/btcPrice;
       else r=1;
       document.getElementById("swapReceive").value=a>0?(a*r).toFixed(t==="CIRBTC"?2:to==="CIRBTC"?8:4):"";
       document.getElementById("swapRate").innerText="1:"+r.toFixed(t==="CIRBTC"?2:8);
