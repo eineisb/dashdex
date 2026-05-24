@@ -295,6 +295,7 @@
     let provider,signer,tipJarC,usdcC,eurcC,cirbtcC;
     let cirbtcBal=0;
     let eurcRate=1.08;
+    let btcPrice=95000;
     let usdcBal=0,eurcBal=0,sepBal=0,pending=null,busy=false;
 
     function lock(){busy=true;document.querySelectorAll(".btn-primary,.modal-confirm").forEach(b=>{b.disabled=true;b.style.opacity="0.5";});document.getElementById("modalOverlay").style.pointerEvents="none";}
@@ -407,8 +408,8 @@
       let r=1;
       if(t==="USDC"&&to==="EURC")r=1/eurcRate;
       else if(t==="EURC"&&to==="USDC")r=eurcRate;
-      else if(t==="CIRBTC")r=95000;
-      else if(to==="CIRBTC")r=1/95000;
+      else if(t==="CIRBTC")r=btcPrice;
+      else if(to==="CIRBTC")r=1/btcPrice;
       else r=1;
       document.getElementById("swapReceive").value=a>0?(a*r).toFixed(t==="CIRBTC"?2:to==="CIRBTC"?8:4):"";
       document.getElementById("swapRate").innerText="1:"+r.toFixed(t==="CIRBTC"?2:8);
@@ -572,6 +573,13 @@
           updateSwapRate();
         }
       }catch(e){console.log('Price fetch failed:',e.message);}
+      try{
+        const res2=await fetch('https://open.er-api.com/v6/latest/BTC');
+        const data2=await res2.json();
+        if(data2.result==='success'&&data2.rates&&data2.rates.USD){
+          btcPrice=parseFloat(data2.rates.USD);
+        }
+      }catch(e){console.log('BTC price fetch failed:',e.message);}
     }
     fetchLivePrice();
     setInterval(fetchLivePrice,60000);
