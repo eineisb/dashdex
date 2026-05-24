@@ -13,10 +13,10 @@
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js">
     function updateSendToken(){
       const t=document.getElementById("sendToken").value;
-      const b=t==="EURC"?eurcBal:usdcBal;
-      document.getElementById("sendAvailable").innerText=b.toFixed(2);
-      document.getElementById("sendTokenLabel").innerText=t;
-      document.getElementById("sendTokenDot").style.background=t==="EURC"?"#26a17b":"#2775ca";
+      const b=t==="EURC"?eurcBal:t==="CIRBTC"?parseFloat(document.getElementById("cirbtcBal").innerText||0):usdcBal;
+      document.getElementById("sendAvailable").innerText=t==="CIRBTC"?b.toFixed(6):b.toFixed(2);
+      document.getElementById("sendTokenLabel").innerText=t==="CIRBTC"?"cirBTC":t;
+      document.getElementById("sendTokenDot").style.background=t==="EURC"?"#26a17b":t==="CIRBTC"?"#f7931a":"#2775ca";
     }
     async function loadHistory(){
       const el=document.getElementById("historyList");
@@ -59,10 +59,10 @@
   
     function updateSendToken(){
       const t=document.getElementById("sendToken").value;
-      const b=t==="EURC"?eurcBal:usdcBal;
-      document.getElementById("sendAvailable").innerText=b.toFixed(2);
-      document.getElementById("sendTokenLabel").innerText=t;
-      document.getElementById("sendTokenDot").style.background=t==="EURC"?"#26a17b":"#2775ca";
+      const b=t==="EURC"?eurcBal:t==="CIRBTC"?parseFloat(document.getElementById("cirbtcBal").innerText||0):usdcBal;
+      document.getElementById("sendAvailable").innerText=t==="CIRBTC"?b.toFixed(6):b.toFixed(2);
+      document.getElementById("sendTokenLabel").innerText=t==="CIRBTC"?"cirBTC":t;
+      document.getElementById("sendTokenDot").style.background=t==="EURC"?"#26a17b":t==="CIRBTC"?"#f7931a":"#2775ca";
     }
     async function loadHistory(){
       const el=document.getElementById("historyList");
@@ -206,6 +206,7 @@
   <div class="balance-bar" id="balanceBar">
     <div class="balance-chip"><div class="balance-chip-token">USDC</div><div class="balance-chip-amount" id="usdcBal">0.00</div><div class="balance-chip-usd" id="usdcUsd">$0.00</div></div>
     <div class="balance-chip"><div class="balance-chip-token">EURC</div><div class="balance-chip-amount" id="eurcBal">0.00</div><div class="balance-chip-usd" id="eurcUsd">$0.00</div></div>
+    <div class="balance-chip"><div class="balance-chip-token">cirBTC</div><div class="balance-chip-amount" id="cirbtcBal">0.00</div><div class="balance-chip-usd" id="cirbtcUsd">$0.00</div></div>
     <div class="balance-chip total"><div class="balance-chip-token">Total</div><div class="balance-chip-amount" id="totalBal">$0.00</div><div class="balance-chip-usd">USD</div></div>
   </div>
   <main class="main">
@@ -283,6 +284,7 @@
     const TIPJAR="0x489E68cD48156f82BD9d24bD307c678fcCA27d0E";
     const USDC="0x3600000000000000000000000000000000000000";
     const EURC="0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a";
+    const CIRBTC="0xf0C4a4CE82A5746AbAAd9425360Ab04fbBA432BF";
     const SEP_RPC="https://ethereum-sepolia-rpc.publicnode.com";
     const SEP_USDC="0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
     const ARC_RPC="https://rpc.testnet.arc.network";
@@ -290,7 +292,7 @@
     const BACKEND="https://dashdex-backend.onrender.com";
     const TIPJAR_ABI=["function tip(uint256,string) public","function getBalance() view returns(uint256)","function withdraw() public","function totalTipsReceived() view returns(uint256)"];
     const ERC20=["function approve(address,uint256) returns(bool)","function balanceOf(address) view returns(uint256)","function transfer(address,uint256) returns(bool)"];
-    let provider,signer,tipJarC,usdcC,eurcC;
+    let provider,signer,tipJarC,usdcC,eurcC,cirbtcC;
     let eurcRate=1.08;
     let usdcBal=0,eurcBal=0,sepBal=0,pending=null,busy=false;
 
@@ -333,6 +335,7 @@
         tipJarC=new ethers.Contract(TIPJAR,TIPJAR_ABI,signer);
         usdcC=new ethers.Contract(USDC,ERC20,signer);
         eurcC=new ethers.Contract(EURC,ERC20,signer);
+        cirbtcC=new ethers.Contract(CIRBTC,ERC20,signer);
         const addr=await signer.getAddress();
         setStatus("Sign the message in your wallet to continue...","loading");
         try{
@@ -358,6 +361,11 @@
         const u=await usdcC.balanceOf(addr);
         usdcBal=parseFloat(ethers.utils.formatUnits(u,6));
         try{const e=await eurcC.balanceOf(addr);eurcBal=parseFloat(ethers.utils.formatUnits(e,6));}catch{eurcBal=0;}
+        let cirbtcBal=0;
+        try{const b=await cirbtcC.balanceOf(addr);cirbtcBal=parseFloat(ethers.utils.formatUnits(b,8));}catch{cirbtcBal=0;}
+        const btcPrice=await fetchBTCPrice();
+        document.getElementById("cirbtcBal").innerText=cirbtcBal.toFixed(6);
+        document.getElementById("cirbtcUsd").innerText="$"+(cirbtcBal*btcPrice).toFixed(2);
         const r=eurcRate;
         document.getElementById("usdcBal").innerText=usdcBal.toFixed(2);
         document.getElementById("usdcUsd").innerText="$"+usdcBal.toFixed(2);
@@ -412,8 +420,9 @@
         const token=document.getElementById("sendToken").value;
         if(!to||!amount){setStatus("Fill in all fields.","error");return;}
         lock();setStatus("Sending "+amount+" "+token+"...","loading");
-        const contract=token==="EURC"?eurcC:usdcC;
-        const tx=await contract.transfer(to,ethers.utils.parseUnits(amount,6));
+        const contract=token==="EURC"?eurcC:token==="CIRBTC"?cirbtcC:usdcC;
+        const decimals=token==="CIRBTC"?8:6;
+        const tx=await contract.transfer(to,ethers.utils.parseUnits(amount,decimals));
         await tx.wait();
         setStatus("Sent "+amount+" "+token+". TX: "+tx.hash.slice(0,10)+"...","success");
         fetchBalances();
@@ -492,10 +501,10 @@
   
     function updateSendToken(){
       const t=document.getElementById("sendToken").value;
-      const b=t==="EURC"?eurcBal:usdcBal;
-      document.getElementById("sendAvailable").innerText=b.toFixed(2);
-      document.getElementById("sendTokenLabel").innerText=t;
-      document.getElementById("sendTokenDot").style.background=t==="EURC"?"#26a17b":"#2775ca";
+      const b=t==="EURC"?eurcBal:t==="CIRBTC"?parseFloat(document.getElementById("cirbtcBal").innerText||0):usdcBal;
+      document.getElementById("sendAvailable").innerText=t==="CIRBTC"?b.toFixed(6):b.toFixed(2);
+      document.getElementById("sendTokenLabel").innerText=t==="CIRBTC"?"cirBTC":t;
+      document.getElementById("sendTokenDot").style.background=t==="EURC"?"#26a17b":t==="CIRBTC"?"#f7931a":"#2775ca";
     }
     async function loadHistory(){
       const el=document.getElementById("historyList");
@@ -531,6 +540,16 @@
       window.addEventListener('load',()=>navigator.serviceWorker.register('/dashdex/sw.js'));
     }
   
+    async function fetchBTCPrice(){
+      try{
+        const res=await fetch('https://open.er-api.com/v6/latest/BTC');
+        const data=await res.json();
+        if(data.result==="success"&&data.rates&&data.rates.USD){
+          return parseFloat(data.rates.USD);
+        }
+      }catch(e){}
+      return 95000;
+    }
     async function fetchLivePrice(){
       try{
         const res=await fetch('https://open.er-api.com/v6/latest/EUR');
