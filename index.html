@@ -13,7 +13,7 @@
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js">
     function updateSendToken(){
       const t=document.getElementById("sendToken").value;
-      const b=t==="EURC"?eurcBal:t==="CIRBTC"?parseFloat(document.getElementById("cirbtcBal").innerText||0):usdcBal;
+      const b=t==="EURC"?eurcBal:t==="CIRBTC"?cirbtcBal:usdcBal;
       document.getElementById("sendAvailable").innerText=t==="CIRBTC"?b.toFixed(6):b.toFixed(2);
       document.getElementById("sendTokenLabel").innerText=t==="CIRBTC"?"cirBTC":t;
       document.getElementById("sendTokenDot").style.background=t==="EURC"?"#26a17b":t==="CIRBTC"?"#f7931a":"#2775ca";
@@ -59,7 +59,7 @@
   
     function updateSendToken(){
       const t=document.getElementById("sendToken").value;
-      const b=t==="EURC"?eurcBal:t==="CIRBTC"?parseFloat(document.getElementById("cirbtcBal").innerText||0):usdcBal;
+      const b=t==="EURC"?eurcBal:t==="CIRBTC"?cirbtcBal:usdcBal;
       document.getElementById("sendAvailable").innerText=t==="CIRBTC"?b.toFixed(6):b.toFixed(2);
       document.getElementById("sendTokenLabel").innerText=t==="CIRBTC"?"cirBTC":t;
       document.getElementById("sendTokenDot").style.background=t==="EURC"?"#26a17b":t==="CIRBTC"?"#f7931a":"#2775ca";
@@ -293,6 +293,7 @@
     const TIPJAR_ABI=["function tip(uint256,string) public","function getBalance() view returns(uint256)","function withdraw() public","function totalTipsReceived() view returns(uint256)"];
     const ERC20=["function approve(address,uint256) returns(bool)","function balanceOf(address) view returns(uint256)","function transfer(address,uint256) returns(bool)"];
     let provider,signer,tipJarC,usdcC,eurcC,cirbtcC;
+    let cirbtcBal=0;
     let eurcRate=1.08;
     let usdcBal=0,eurcBal=0,sepBal=0,pending=null,busy=false;
 
@@ -361,7 +362,6 @@
         const u=await usdcC.balanceOf(addr);
         usdcBal=parseFloat(ethers.utils.formatUnits(u,6));
         try{const e=await eurcC.balanceOf(addr);eurcBal=parseFloat(ethers.utils.formatUnits(e,6));}catch{eurcBal=0;}
-        let cirbtcBal=0;
         try{const b=await cirbtcC.balanceOf(addr);cirbtcBal=parseFloat(ethers.utils.formatUnits(b,8));}catch{cirbtcBal=0;}
         const btcPrice=await fetchBTCPrice();
         document.getElementById("cirbtcBal").innerText=cirbtcBal.toFixed(6);
@@ -373,7 +373,7 @@
         document.getElementById("eurcUsd").innerText="$"+(eurcBal*r).toFixed(2);
         document.getElementById("totalBal").innerText="$"+(usdcBal+eurcBal*r).toFixed(2);
         document.getElementById("balanceBar").classList.add("visible");
-        const st=document.getElementById("sendToken");const sb=st&&st.value==="EURC"?eurcBal:usdcBal;document.getElementById("sendAvailable").innerText=sb.toFixed(2);
+        const st=document.getElementById("sendToken");const sb=st&&st.value==="EURC"?eurcBal:st&&st.value==="CIRBTC"?cirbtcBal:usdcBal;document.getElementById("sendAvailable").innerText=st&&st.value==="CIRBTC"?sb.toFixed(6):sb.toFixed(2);
         document.getElementById("tipAvailable").innerText=usdcBal.toFixed(2);
         document.getElementById("arcBridgeBalance").innerText=usdcBal.toFixed(2);
         updateBridgeAvailable();updateSwapAvailable();
@@ -393,8 +393,8 @@
     }
 
     function updateBridgeAvailable(){const f=document.getElementById("bridgeFrom").value;const b=f==="Ethereum_Sepolia"?sepBal:usdcBal;document.getElementById("bridgeAvailable").innerText=b.toFixed(2)+" USDC";}
-    function updateSwapAvailable(){const t=document.getElementById("tokenIn").value;const b=t==="USDC"?usdcBal:eurcBal;document.getElementById("swapAvailable").innerText=b.toFixed(2)+" "+t;}
-    function setPct(id,p){const b=id==='tipAmount'?usdcBal:(document.getElementById('sendToken')&&document.getElementById('sendToken').value==='EURC'?eurcBal:usdcBal);document.getElementById(id).value=((b*p)/100).toFixed(6);}
+    function updateSwapAvailable(){const t=document.getElementById("tokenIn").value;const b=t==="USDC"?usdcBal:t==="CIRBTC"?cirbtcBal:eurcBal;document.getElementById("swapAvailable").innerText=t==="CIRBTC"?b.toFixed(6)+" cirBTC":b.toFixed(2)+" "+t;}
+    function setPct(id,p){const st=document.getElementById('sendToken');const sv=st?st.value:'USDC';const b=id==='tipAmount'?usdcBal:(sv==='EURC'?eurcBal:sv==='CIRBTC'?cirbtcBal:usdcBal);document.getElementById(id).value=((b*p)/100).toFixed(sv==='CIRBTC'?8:6);}
     function setPctBridge(p){const f=document.getElementById("bridgeFrom").value;const b=f==="Ethereum_Sepolia"?sepBal:usdcBal;document.getElementById("bridgeAmount").value=((b*p)/100).toFixed(6);}
     function setPctSwap(p){const t=document.getElementById("tokenIn").value;const b=t==="USDC"?usdcBal:eurcBal;document.getElementById("swapAmount").value=((b*p)/100).toFixed(6);updateSwapRate();}
     function switchTab(t,el){document.querySelectorAll(".card").forEach(c=>c.classList.remove("active"));document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));document.getElementById("tab-"+t).classList.add("active");el.classList.add("active");updateSwapAvailable();}
@@ -501,7 +501,7 @@
   
     function updateSendToken(){
       const t=document.getElementById("sendToken").value;
-      const b=t==="EURC"?eurcBal:t==="CIRBTC"?parseFloat(document.getElementById("cirbtcBal").innerText||0):usdcBal;
+      const b=t==="EURC"?eurcBal:t==="CIRBTC"?cirbtcBal:usdcBal;
       document.getElementById("sendAvailable").innerText=t==="CIRBTC"?b.toFixed(6):b.toFixed(2);
       document.getElementById("sendTokenLabel").innerText=t==="CIRBTC"?"cirBTC":t;
       document.getElementById("sendTokenDot").style.background=t==="EURC"?"#26a17b":t==="CIRBTC"?"#f7931a":"#2775ca";
