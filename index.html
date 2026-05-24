@@ -400,7 +400,20 @@
     function switchTab(t,el){document.querySelectorAll(".card").forEach(c=>c.classList.remove("active"));document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));document.getElementById("tab-"+t).classList.add("active");el.classList.add("active");updateSwapAvailable();}
     function swapChains(){const f=document.getElementById("bridgeFrom"),t=document.getElementById("bridgeTo"),tmp=f.value;f.value=t.value;t.value=tmp;updateBridgeAvailable();}
     function swapTokens(){const i=document.getElementById("tokenIn"),o=document.getElementById("tokenOut"),tmp=i.value;i.value=o.value;o.value=tmp;updateSwapRate();}
-    function updateSwapRate(){const a=parseFloat(document.getElementById("swapAmount").value)||0;const t=document.getElementById("tokenIn").value;const r=t==="USDC"?(1/eurcRate):eurcRate;document.getElementById("swapReceive").value=a>0?(a*r).toFixed(4):"";document.getElementById("swapRate").innerText="1:"+r.toFixed(4);updateSwapAvailable();}
+    function updateSwapRate(){
+      const a=parseFloat(document.getElementById("swapAmount").value)||0;
+      const t=document.getElementById("tokenIn").value;
+      const to=document.getElementById("tokenOut").value;
+      let r=1;
+      if(t==="USDC"&&to==="EURC")r=1/eurcRate;
+      else if(t==="EURC"&&to==="USDC")r=eurcRate;
+      else if(t==="CIRBTC")r=95000;
+      else if(to==="CIRBTC")r=1/95000;
+      else r=1;
+      document.getElementById("swapReceive").value=a>0?(a*r).toFixed(t==="CIRBTC"?2:to==="CIRBTC"?8:4):"";
+      document.getElementById("swapRate").innerText="1:"+r.toFixed(t==="CIRBTC"?2:8);
+      updateSwapAvailable();
+    }
 
     function showModal(title,rows,cls,action){
       document.getElementById("modalTitle").innerText=title;
