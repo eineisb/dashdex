@@ -303,16 +303,16 @@
 
     function showWalletModal(){if(window.openWeb3Modal)window.openWeb3Modal();else document.getElementById("walletModalOverlay").classList.add("active");}
     function closeWalletModal(){document.getElementById("walletModalOverlay").classList.remove("active");}
-    async function connectWithBrowser(){closeWalletModal();await connectWallet();}
-    async function connectWithMetaMask(){closeWalletModal();await connectWallet();}
-    async function connectWithWalletConnect(){closeWalletModal();if(window.openWeb3Modal)window.openWeb3Modal();else await connectWallet();}
+    async function connectWithBrowser(){closeWalletModal();await connectWallet(true);}
+    async function connectWithMetaMask(){closeWalletModal();await connectWallet(true);}
+    async function connectWithWalletConnect(){closeWalletModal();if(window.openWeb3Modal)window.openWeb3Modal();else await connectWallet(true);}
 
     async function toggleWallet(){
       if(signer){signer=null;provider=null;document.getElementById("balanceBar").classList.remove("visible");const b=document.getElementById("connectBtn");b.innerText="Connect";b.className="btn-connect";setStatus("Wallet disconnected.");}
       else showWalletModal();
     }
 
-    async function connectWallet(){
+    async function connectWallet(skipSign=false){
       try{
         if(!window.ethereum){
         const url=encodeURIComponent("https://eineisb.github.io/dashdex");
@@ -339,15 +339,17 @@
         eurcC=new ethers.Contract(EURC,ERC20,signer);
         cirbtcC=new ethers.Contract(CIRBTC,ERC20,signer);
         const addr=await signer.getAddress();
-        setStatus("Sign the message in your wallet to continue...","loading");
-        try{
-          const msg="Dash.dex wants you to sign in with your Ethereum account:\n"+addr+"\n\nSign in to Dash.dex — DEX on Arc Testnet.\n\nURI: https://eineisb.github.io/dashdex\nVersion: 1\nChain ID: 5042002\nNonce: "+Math.random().toString(36).slice(2)+"\nIssued At: "+new Date().toISOString();
-          await signer.signMessage(msg);
-        }catch(e){
-          signer=null;
-          setStatus("You must sign the message to connect.","error");
-          unlock();
-          return;
+        if(!skipSign){
+          setStatus("Sign the message in your wallet to continue...","loading");
+          try{
+            const msg="Dash.dex wants you to sign in with your Ethereum account:\n"+addr+"\n\nSign in to Dash.dex — DEX on Arc Testnet.\n\nURI: https://eineisb.github.io/dashdex\nVersion: 1\nChain ID: 5042002\nNonce: "+Math.random().toString(36).slice(2)+"\nIssued At: "+new Date().toISOString();
+            await signer.signMessage(msg);
+          }catch(e){
+            signer=null;
+            setStatus("You must sign the message to connect.","error");
+            unlock();
+            return;
+          }
         }
         const btn=document.getElementById("connectBtn");
         btn.innerText=addr.slice(0,6)+"..."+addr.slice(-4);
@@ -590,7 +592,7 @@
         try{
           const accounts = await window.ethereum.request({method:'eth_accounts'});
           if(accounts.length > 0){
-            await connectWallet();
+            await connectWallet(true);
           }
         }catch(e){console.log('Auto-reconnect failed:',e.message);}
       }
