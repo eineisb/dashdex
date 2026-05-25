@@ -203,11 +203,11 @@
       <button class="btn-connect" id="connectBtn" onclick="signer?showWalletInfo():showWalletModal()">Connect</button>
     </div>
   </header>
-  <div class="balance-bar" id="balanceBar">
-    <div class="balance-chip"><div class="balance-chip-token">USDC</div><div class="balance-chip-amount" id="usdcBal">0.00</div><div class="balance-chip-usd" id="usdcUsd">$0.00</div></div>
-    <div class="balance-chip"><div class="balance-chip-token">EURC</div><div class="balance-chip-amount" id="eurcBal">0.00</div><div class="balance-chip-usd" id="eurcUsd">$0.00</div></div>
-    <div class="balance-chip"><div class="balance-chip-token">cirBTC</div><div class="balance-chip-amount" id="cirbtcBal">0.00</div><div class="balance-chip-usd" id="cirbtcUsd">$0.00</div></div>
-    <div class="balance-chip total"><div class="balance-chip-token">Total</div><div class="balance-chip-amount" id="totalBal">$0.00</div><div class="balance-chip-usd">USD</div></div>
+  <div style="display:none">
+    <span id="usdcBal">0.00</span><span id="usdcUsd">$0.00</span>
+    <span id="eurcBal">0.00</span><span id="eurcUsd">$0.00</span>
+    <span id="cirbtcBal">0.00</span><span id="cirbtcUsd">$0.00</span>
+    <span id="totalBal">$0.00</span>
   </div>
   <main class="main">
     <div class="tabs">
@@ -310,7 +310,7 @@
     async function toggleWallet(){
       if(signer){
         signer=null;provider=null;
-        document.getElementById("balanceBar").classList.remove("visible");
+        
         document.getElementById("walletInfoModal").classList.remove("active");
         const b=document.getElementById("connectBtn");
         b.innerText="Connect";b.className="btn-connect";
@@ -322,6 +322,13 @@
       if(!signer)return;
       const addr=await signer.getAddress();
       document.getElementById("walletInfoAddr").innerText=addr;
+      document.getElementById("modalUsdcBal").innerText=document.getElementById("usdcBal").innerText;
+      document.getElementById("modalUsdcUsd").innerText=document.getElementById("usdcUsd").innerText;
+      document.getElementById("modalEurcBal").innerText=document.getElementById("eurcBal").innerText;
+      document.getElementById("modalEurcUsd").innerText=document.getElementById("eurcUsd").innerText;
+      document.getElementById("modalCirbtcBal").innerText=document.getElementById("cirbtcBal").innerText;
+      document.getElementById("modalCirbtcUsd").innerText=document.getElementById("cirbtcUsd").innerText;
+      document.getElementById("modalTotalBal").innerText=document.getElementById("totalBal").innerText;
       document.getElementById("walletInfoModal").classList.add("active");
     }
 
@@ -396,7 +403,7 @@
         document.getElementById("eurcBal").innerText=eurcBal.toFixed(2);
         document.getElementById("eurcUsd").innerText="$"+(eurcBal*r).toFixed(2);
         document.getElementById("totalBal").innerText="$"+(usdcBal+eurcBal*r).toFixed(2);
-        document.getElementById("balanceBar").classList.add("visible");
+        
         const st=document.getElementById("sendToken");const sb=st&&st.value==="EURC"?eurcBal:st&&st.value==="CIRBTC"?cirbtcBal:usdcBal;document.getElementById("sendAvailable").innerText=st&&st.value==="CIRBTC"?sb.toFixed(6):sb.toFixed(2);
         document.getElementById("tipAvailable").innerText=usdcBal.toFixed(2);
         document.getElementById("arcBridgeBalance").innerText=usdcBal.toFixed(2);
@@ -626,7 +633,29 @@
     <div class="modal">
       <div class="modal-handle"></div>
       <div class="modal-title">My Wallet</div>
-      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:14px;word-break:break-all;font-size:12px;color:var(--text-secondary);text-align:center;" id="walletInfoAddr"></div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:12px;word-break:break-all;font-size:12px;color:var(--text-secondary);text-align:center;" id="walletInfoAddr"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:10px;text-align:center;">
+          <div style="font-size:10px;font-weight:700;color:var(--text-muted);letter-spacing:1px;">USDC</div>
+          <div style="font-size:16px;font-weight:700;color:var(--text);" id="modalUsdcBal">0.00</div>
+          <div style="font-size:11px;color:var(--text-muted);" id="modalUsdcUsd">$0.00</div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:10px;text-align:center;">
+          <div style="font-size:10px;font-weight:700;color:var(--text-muted);letter-spacing:1px;">EURC</div>
+          <div style="font-size:16px;font-weight:700;color:var(--text);" id="modalEurcBal">0.00</div>
+          <div style="font-size:11px;color:var(--text-muted);" id="modalEurcUsd">$0.00</div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:10px;text-align:center;">
+          <div style="font-size:10px;font-weight:700;color:var(--text-muted);letter-spacing:1px;">cirBTC</div>
+          <div style="font-size:16px;font-weight:700;color:var(--text);" id="modalCirbtcBal">0.00</div>
+          <div style="font-size:11px;color:var(--text-muted);" id="modalCirbtcUsd">$0.00</div>
+        </div>
+        <div style="background:var(--accent-glow);border:1px solid rgba(79,110,247,0.3);border-radius:12px;padding:10px;text-align:center;">
+          <div style="font-size:10px;font-weight:700;color:var(--text-muted);letter-spacing:1px;">TOTAL</div>
+          <div style="font-size:16px;font-weight:700;color:var(--accent);" id="modalTotalBal">$0.00</div>
+          <div style="font-size:11px;color:var(--text-muted);">USD</div>
+        </div>
+      </div>
       <button id="copyAddrBtn" onclick="copyAddress()" style="width:100%;padding:13px;border-radius:12px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px;">Copy Address</button>
       <button onclick="toggleWallet();document.getElementById('walletInfoModal').classList.remove('active');" style="width:100%;padding:13px;border-radius:12px;border:none;background:var(--red);color:white;font-size:14px;font-weight:700;cursor:pointer;">Disconnect</button>
       <button onclick="document.getElementById('walletInfoModal').classList.remove('active')" style="width:100%;padding:13px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-size:14px;font-weight:600;cursor:pointer;margin-top:8px;">Close</button>
