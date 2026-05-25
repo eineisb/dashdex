@@ -583,8 +583,20 @@
         }
       }catch(e){console.log('BTC price fetch failed:',e.message);}
     }
-    fetchLivePrice();
-    setInterval(fetchLivePrice,60000);
+
+    // Auto-reconnect if previously connected
+    window.addEventListener('load', async () => {
+      if(window.ethereum){
+        try{
+          const accounts = await window.ethereum.request({method:'eth_accounts'});
+          if(accounts.length > 0){
+            await connectWallet();
+          }
+        }catch(e){console.log('Auto-reconnect failed:',e.message);}
+      }
+      fetchLivePrice();
+      setInterval(fetchLivePrice, 60000);
+    });
   </script>
 </body>
 </html>
