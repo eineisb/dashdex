@@ -508,6 +508,7 @@
           const res=await fetch(BACKEND+"/swap",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({tokenIn:ti,tokenOut:to,amountIn:amt})});
           const data=await res.json();
           if(data.success)setStatus("Swapped "+amt+" "+ti+" for "+data.amountOut+" "+to+".","success"),fetchBalances();
+          else if(ti==="EURC"||to==="EURC")setStatus("EURC swaps are temporarily unavailable on Arc Testnet. Try USDC to cirBTC instead.","error");
           else if(data.error&&data.error.includes("No route"))setStatus("Swap route unavailable right now. Try a different amount or try later.","error");
           else setStatus(data.error,"error");
         }catch(e){setStatus(e.message,"error");}finally{unlock();}
