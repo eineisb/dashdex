@@ -51,7 +51,7 @@
     import { createWeb3Modal, defaultWagmiConfig } from "https://cdn.jsdelivr.net/npm/@web3modal/wagmi@5.1.11/dist/index.js";
     const projectId = "b56e18d47c72ab683b10814fe9495694";
     const metadata = { name: "Dash.dex", description: "DEX on Arc Testnet", url: "https://eineisb.github.io/dashdex", icons: ["https://avatars.githubusercontent.com/u/37784886"] };
-    const arcTestnet = { id: 5042002, name: "Arc Testnet", network: "arc-testnet", nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 6 }, rpcUrls: { default: { http: ["https://rpc.testnet.arc.network"] } }, blockExplorers: { default: { name: "ArcScan", url: "https://testnet.arcscan.app" } } };
+    const arcTestnet = { id: 5042002, name: "Arc Testnet", network: "arc-testnet", nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 6 }, rpcUrls: { default: { http: ["https://5042002.rpc.thirdweb.com"] } }, blockExplorers: { default: { name: "ArcScan", url: "https://testnet.arcscan.app" } } };
     const chains = [arcTestnet];
     const config = defaultWagmiConfig({ chains, projectId, metadata });
     const modal = createWeb3Modal({ wagmiConfig: config, projectId, chains, enableEIP6963: true, enableInjected: true, enableCoinbase: true });
