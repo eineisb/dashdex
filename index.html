@@ -509,7 +509,7 @@
       else if(to==="CIRBTC"&&ti==="USDC")r=1/btcPrice;
       else if(to==="CIRBTC"&&ti==="EURC")r=eurcRate/btcPrice;
       const est=(parseFloat(amt)*r).toFixed(to==="CIRBTC"?8:4);
-      showModal("Confirm Swap",[["You Pay",amt+" "+ti],["You Receive (est.)",est+" "+to],["Rate","1 "+ti+" = "+r+" "+to],["Fee","~0.000002 USDC"],["Network","Arc Testnet"]],"green",async function(){
+      showModal("Confirm Swap",[["You Pay",amt+" "+ti],["You Receive (approx.)",est+" "+to],["Rate","1 "+ti+" = "+r+" "+to],["Fee","~0.000002 USDC"],["Network","Arc Testnet"]],"green",async function(){
         try{
           lock();setStatus("Swapping "+amt+" "+ti+"...","loading");
           const res=await fetch(BACKEND+"/swap",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({tokenIn:ti,tokenOut:to,amountIn:amt})});
