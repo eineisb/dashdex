@@ -501,7 +501,14 @@
       if(busy)return;
       const ti=document.getElementById("tokenIn").value,to=document.getElementById("tokenOut").value,amt=document.getElementById("swapAmount").value;
       if(!amt){setStatus("Enter an amount.","error");return;}
-      const r=ti==="USDC"?0.9268:1.08,est=(parseFloat(amt)*r).toFixed(4);
+      let r=1;
+      if(ti==="USDC"&&to==="EURC")r=1/eurcRate;
+      else if(ti==="EURC"&&to==="USDC")r=eurcRate;
+      else if(ti==="CIRBTC"&&to==="USDC")r=btcPrice;
+      else if(ti==="CIRBTC"&&to==="EURC")r=btcPrice/eurcRate;
+      else if(to==="CIRBTC"&&ti==="USDC")r=1/btcPrice;
+      else if(to==="CIRBTC"&&ti==="EURC")r=eurcRate/btcPrice;
+      const est=(parseFloat(amt)*r).toFixed(to==="CIRBTC"?8:4);
       showModal("Confirm Swap",[["You Pay",amt+" "+ti],["You Receive (est.)",est+" "+to],["Rate","1 "+ti+" = "+r+" "+to],["Fee","~0.000002 USDC"],["Network","Arc Testnet"]],"green",async function(){
         try{
           lock();setStatus("Swapping "+amt+" "+ti+"...","loading");
