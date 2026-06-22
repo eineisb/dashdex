@@ -501,6 +501,8 @@
       if(busy)return;
       const ti=document.getElementById("tokenIn").value,to=document.getElementById("tokenOut").value,amt=document.getElementById("swapAmount").value;
       if(!amt){setStatus("Enter an amount.","error");return;}
+      const balCheck=ti==="USDC"?usdcBal:ti==="CIRBTC"?cirbtcBal:eurcBal;
+      if(parseFloat(amt)>balCheck){setStatus("Insufficient balance. You only have "+(ti==="CIRBTC"?balCheck.toFixed(6):balCheck.toFixed(4))+" "+ti+".","error");return;}
       let r=1;
       if(ti==="USDC"&&to==="EURC")r=1/eurcRate;
       else if(ti==="EURC"&&to==="USDC")r=eurcRate;
