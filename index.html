@@ -474,7 +474,7 @@
         await tx.wait();
         setStatus("Sent "+amount+" "+token+". TX: "+tx.hash.slice(0,10)+"...","success");
         fetchBalances();
-      }catch(e){setStatus(e.message,"error");}finally{unlock();}
+      }catch(e){setStatus(friendlyNetworkError(e.message),"error");}finally{unlock();}
     }
 
     async function doBridge(){
@@ -549,7 +549,7 @@
         await(await tipJarC.tip(p,msg)).wait();
         setStatus("Tip of "+amount+" USDC sent."+(msg?' "'+msg+'"':""),"success");
         fetchBalances();refreshJar();
-      }catch(e){setStatus(e.message,"error");}finally{unlock();}
+      }catch(e){setStatus(friendlyNetworkError(e.message),"error");}finally{unlock();}
     }
 
     async function checkBalance(){
