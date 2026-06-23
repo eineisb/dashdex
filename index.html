@@ -496,7 +496,7 @@
           else setStatus(data.error,"error");
         }catch(e){
           if(e.name==="AbortError")setStatus("Bridge taking longer. Check testnet.arcscan.app.","loading");
-          else setStatus(e.message,"error");
+          else setStatus(friendlyNetworkError(e.message),"error");
         }finally{unlock();}
       });
     }
@@ -526,6 +526,13 @@
           else setStatus(data.error,"error");
         }catch(e){setStatus(e.message,"error");}finally{unlock();}
       });
+    }
+
+    function friendlyNetworkError(msg){
+      if(msg&&msg.toLowerCase().includes("failed to fetch")){
+        return "Network connection lost. Check your internet and try again.";
+      }
+      return msg;
     }
 
     async function sendTip(){
