@@ -479,6 +479,8 @@
       if(busy)return;
       const fc=document.getElementById("bridgeFrom").value,tc=document.getElementById("bridgeTo").value,amount=document.getElementById("bridgeAmount").value;
       if(!amount){setStatus("Enter an amount.","error");return;}
+      const bridgeBalCheck=fc==="Ethereum_Sepolia"?sepBal:usdcBal;
+      if(parseFloat(amount)>bridgeBalCheck){setStatus("Insufficient balance. You only have "+bridgeBalCheck.toFixed(4)+" USDC on "+(fc==="Ethereum_Sepolia"?"Sepolia":"Arc")+".","error");return;}
       const fl=fc==="Ethereum_Sepolia"?"Ethereum Sepolia":"Arc Testnet",tl=tc==="Arc_Testnet"?"Arc Testnet":"Ethereum Sepolia";
       showModal("Confirm Bridge",[["Amount",amount+" USDC"],["From",fl],["To",tl],["Protocol","CCTP"],["Est. Time","20-60s"]],"blue",async function(){
         try{
