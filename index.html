@@ -558,7 +558,15 @@
 
     async function withdraw(){
       if(busy)return;
-      try{if(!signer){setStatus("Connect wallet first.","error");return;}lock();setStatus("Withdrawing...","loading");await(await tipJarC.withdraw()).wait();setStatus("Withdrawal complete.","success");fetchBalances();refreshJar();}catch(e){setStatus(e.message,"error");}finally{unlock();}
+      try{
+        if(!signer){setStatus("Connect wallet first.","error");return;}
+        lock();setStatus("Checking permissions...","loading");
+        try{await tipJarC.callStatic.withdraw();}
+        catch(simErr){setStatus("Only the contract owner can withdraw funds.","error");return;}
+        setStatus("Withdrawing...","loading");
+        await(await tipJarC.withdraw()).wait();
+        setStatus("Withdrawal complete.","success");fetchBalances();refreshJar();
+      }catch(e){setStatus(friendlyNetworkError(e.message),"error");}finally{unlock();}
     }
 
     async function refreshJar(){
