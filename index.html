@@ -465,6 +465,8 @@
         const to=document.getElementById("sendTo").value,amount=document.getElementById("sendAmount").value;
         const token=document.getElementById("sendToken").value;
         if(!to||!amount){setStatus("Fill in all fields.","error");return;}
+        const sendBalCheck=token==="EURC"?eurcBal:token==="CIRBTC"?cirbtcBal:usdcBal;
+        if(parseFloat(amount)>sendBalCheck){setStatus("Insufficient balance. You only have "+(token==="CIRBTC"?sendBalCheck.toFixed(8):sendBalCheck.toFixed(4))+" "+token+".","error");return;}
         lock();setStatus("Sending "+amount+" "+token+"...","loading");
         const contract=token==="EURC"?eurcC:token==="CIRBTC"?cirbtcC:usdcC;
         const decimals=token==="CIRBTC"?8:6;
@@ -532,6 +534,7 @@
         if(!signer){setStatus("Connect wallet first.","error");return;}
         const amount=document.getElementById("tipAmount").value,msg=document.getElementById("tipMessage").value;
         if(!amount){setStatus("Enter a tip amount.","error");return;}
+        if(parseFloat(amount)>usdcBal){setStatus("Insufficient balance. You only have "+usdcBal.toFixed(4)+" USDC.","error");return;}
         lock();setStatus("Approving USDC...","loading");
         const p=ethers.utils.parseUnits(amount,6);
         await(await usdcC.approve(TIPJAR,p)).wait();
