@@ -252,7 +252,7 @@
       <div class="input-group" style="margin-top:4px"><div class="input-label">Message</div><input class="input-field" id="tipMessage" placeholder="Leave a message..." style="font-size:14px"/></div>
       <button class="btn-primary" onclick="sendTip()">Send Tip</button>
       <button class="btn-primary btn-secondary" onclick="checkBalance()">Check Balance</button>
-      <button class="btn-primary green btn-secondary" onclick="withdraw()">Withdraw</button>
+      <button class="btn-primary green btn-secondary" onclick="withdraw()" id="withdrawBtn" style="display:none">Withdraw</button>
     </div>
     
     <div class="card" id="tab-history">
@@ -367,6 +367,9 @@
         eurcC=new ethers.Contract(EURC,ERC20,signer);
         cirbtcC=new ethers.Contract(CIRBTC,ERC20,signer);
         const addr=await signer.getAddress();
+        const OWNER_ADDRESS="0xa34428Eb311Cd19Bffa2f10401Edf7Df8D4f53DD";
+        const withdrawBtn=document.getElementById("withdrawBtn");
+        if(withdrawBtn)withdrawBtn.style.display=(addr.toLowerCase()===OWNER_ADDRESS.toLowerCase())?"block":"none";
         if(!skipSign){
           setStatus("Sign the message in your wallet to continue...","loading");
           try{
