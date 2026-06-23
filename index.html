@@ -553,7 +553,7 @@
     }
 
     async function checkBalance(){
-      try{if(!signer){setStatus("Connect wallet first.","error");return;}const b=await tipJarC.getBalance();setStatus("Jar: "+ethers.utils.formatUnits(b,6)+" USDC","success");document.getElementById("jarBalance").innerText=ethers.utils.formatUnits(b,6);}catch(e){setStatus(e.message,"error");}
+      try{if(!signer){setStatus("Connect wallet first.","error");return;}const b=await tipJarC.getBalance();setStatus("Jar: "+ethers.utils.formatUnits(b,6)+" USDC","success");document.getElementById("jarBalance").innerText=ethers.utils.formatUnits(b,6);}catch(e){setStatus(friendlyNetworkError(e.message),"error");}
     }
 
     async function withdraw(){
@@ -570,7 +570,7 @@
     }
 
     async function refreshJar(){
-      try{const b=await tipJarC.getBalance(),t=await tipJarC.totalTipsReceived();document.getElementById("jarBalance").innerText=ethers.utils.formatUnits(b,6);document.getElementById("jarTips").innerText=ethers.utils.formatUnits(t,6);}catch{}
+      try{const b=await tipJarC.getBalance(),t=await tipJarC.totalTipsReceived();document.getElementById("jarBalance").innerText=ethers.utils.formatUnits(b,6);document.getElementById("jarTips").innerText=ethers.utils.formatUnits(t,6);}catch(e){console.log("refreshJar failed:",e.message);}
     }
 
     function setStatus(msg,type){const el=document.getElementById("status");el.innerText=msg;el.className="status-box"+(type?" "+type:"");}
